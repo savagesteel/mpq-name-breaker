@@ -71,6 +71,5 @@ namespace MpqNameBreaker.Mpq
 
             return seed1;
         }
-
     }
 }
