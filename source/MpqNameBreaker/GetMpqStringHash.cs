@@ -1,27 +1,31 @@
 ﻿using System;
+using System.Text;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using MpqNameBreaker.Mpq;
 
 namespace MpqNameBreaker
 {
-    [Cmdlet(VerbsLifecycle.Start,"NameBreaking")]
-    //[OutputType(typeof(FavoriteStuff))]
-    public class TestSampleCmdletCommand : PSCmdlet
+    [Cmdlet(VerbsCommon.Get,"MpqStringHash")]
+    [OutputType(typeof(uint))]
+    public class GetMpqStringHashCommand : PSCmdlet
     {
-        /*
         [Parameter(
             Mandatory = true,
             Position = 0,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
-        public int FavoriteNumber { get; set; }
+        public string String { get; set; }
 
         [Parameter(
+            Mandatory = true,
             Position = 1,
             ValueFromPipelineByPropertyName = true)]
-        [ValidateSet("Cat", "Dog", "Horse")]
-        public string FavoritePet { get; set; } = "Dog";
-        */
+        public HashType Type { get; set; }
+  
+
+        // Fields
+        private HashCalculator _hashCalculator;
 
         // This method gets called once for each cmdlet in the pipeline when the pipeline starts executing
         protected override void BeginProcessing()
@@ -33,12 +37,9 @@ namespace MpqNameBreaker
         protected override void ProcessRecord()
         {
             WriteVerbose("Process");
-            /*
-            WriteObject(new FavoriteStuff { 
-                FavoriteNumber = FavoriteNumber,
-                FavoritePet = FavoritePet
-            });
-            */
+
+            _hashCalculator = new HashCalculator();
+            WriteObject( _hashCalculator.HashString( Encoding.ASCII.GetBytes(String), Type ) );
         }
 
         // This method will be called once at the end of pipeline execution; if no input is received, this method is not called
