@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Diagnostics;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using MpqNameBreaker.Mpq;
@@ -23,7 +24,6 @@ namespace MpqNameBreaker
             ValueFromPipelineByPropertyName = true)]
         public HashType Type { get; set; }
   
-
         // Fields
         private HashCalculator _hashCalculator;
 
@@ -38,8 +38,22 @@ namespace MpqNameBreaker
         {
             WriteVerbose("Process");
 
+            string strUpper;
+            byte[] strBytes;
+            uint hash;
+
+            // Initialize hash calculator
             _hashCalculator = new HashCalculator();
-            WriteObject( _hashCalculator.HashString( Encoding.ASCII.GetBytes(String), Type ) );
+
+            // Convert string to uppercase
+            strUpper = String.ToUpper();
+            // Get ASCII chars
+            strBytes = Encoding.ASCII.GetBytes( strUpper );
+            // Compute hash
+            hash = _hashCalculator.HashString( strBytes, Type );
+
+            // Output hash to console
+            WriteObject( hash );
         }
 
         // This method will be called once at the end of pipeline execution; if no input is received, this method is not called
