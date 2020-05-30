@@ -1,0 +1,25 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "PowerShell Core Launch",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "C:/Program Files/PowerShell/7/pwsh.exe",
+      "args": [
+        "-NoExit",
+        "-NoLogo",
+        "-NoProfile",
+        "-Command",
+        "Import-Module ./bin/Debug/netstandard2.0/MpqNameBreaker.dll"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "externalTerminal",
+      "stopAtEntry": false
+    }
+  ]
+}
