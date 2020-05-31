@@ -71,5 +71,41 @@ namespace MpqNameBreaker.Mpq
 
             return seed1;
         }
+
+
+        public (uint, uint) HashStringOptimizedCalculateSeeds( byte[] str, HashType hashType )
+        {
+            uint seed1 = HashSeed1;
+            uint seed2 = HashSeed2;
+            uint ch;
+
+            int type = (int)hashType;
+
+            for( int i = 0; i < str.Length; i++ )
+            {
+                ch = str[i];
+                seed1 = CryptTable[type + ch] ^ (seed1 + seed2);
+                seed2 = ch + seed1 + seed2 + (seed2 << 5) + 3;
+            }
+
+            return (seed1, seed2);
+        }
+
+        // Call HashStringOptimizedCalculateSeeds before this method
+        public uint HashStringOptimized( byte[] str, HashType hashType, int prefixLength, uint seed1, uint seed2 )
+        {
+            uint ch;
+
+            int type = (int)hashType;
+
+            for( int i = prefixLength; i < str.Length; i++ )
+            {
+                ch = str[i];
+                seed1 = CryptTable[type + ch] ^ (seed1 + seed2);
+                seed2 = ch + seed1 + seed2 + (seed2 << 5) + 3;
+            }
+
+            return seed1;
+        }
     }
 }

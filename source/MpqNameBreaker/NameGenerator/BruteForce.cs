@@ -7,12 +7,16 @@ namespace MpqNameBreaker.NameGenerator
     {
         // Constants
         const int MaxGeneratedChars = 12;
-        const string Charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
+        const string Charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-";
         // ".\\"
 
         // Properties
         public string Prefix {get; private set;}
+        public byte[] PrefixBytes {get; private set;}
+
         public string Suffix {get; private set;}
+        public byte[] SuffixBytes {get; private set;}
+
         public string Name {
             get {
                 return Encoding.ASCII.GetString( NameBytes );
@@ -23,12 +27,10 @@ namespace MpqNameBreaker.NameGenerator
 
         // Fields
         private byte[] _charsetBytes;
-        private byte[] _prefixBytes;
         private int _prefixBytesCount;
-        private byte[] _suffixBytes;
         private int _suffixBytesCount;
         private int _generatedCharIndex;
-        private int _currentCharsetIndex;
+        //private int _currentCharsetIndex;
         private int[] _allCharsetIndexes;
 
         // Constructors
@@ -50,13 +52,13 @@ namespace MpqNameBreaker.NameGenerator
 
             if( prefix != "" )
             {
-                _prefixBytes = Encoding.ASCII.GetBytes( prefix.ToUpper() );
-                _prefixBytesCount = _prefixBytes.Length;
+                PrefixBytes = Encoding.ASCII.GetBytes( prefix.ToUpper() );
+                _prefixBytesCount = PrefixBytes.Length;
             }
             if( suffix != "" )
             {
-                _suffixBytes = Encoding.ASCII.GetBytes( suffix.ToUpper() );
-                _suffixBytesCount = _suffixBytes.Length;
+                SuffixBytes = Encoding.ASCII.GetBytes( suffix.ToUpper() );
+                _suffixBytesCount = SuffixBytes.Length;
             }
         }
 
@@ -71,8 +73,10 @@ namespace MpqNameBreaker.NameGenerator
             // We start with one generated character plus prefix and suffix length
             NameBytes = new byte[ _prefixBytesCount + 1 + _suffixBytesCount ];
 
-            Array.Copy( _prefixBytes, 0, NameBytes, 0, _prefixBytesCount );
-            Array.Copy( _suffixBytes, 0, NameBytes, _prefixBytesCount+1, _suffixBytesCount );
+            if( _prefixBytesCount > 0 )
+                Array.Copy( PrefixBytes, 0, NameBytes, 0, _prefixBytesCount );
+            if( _suffixBytesCount > 0 )
+                Array.Copy( SuffixBytes, 0, NameBytes, _prefixBytesCount+1, _suffixBytesCount );
 
             Initialized = true;
         }
@@ -87,14 +91,16 @@ namespace MpqNameBreaker.NameGenerator
             NameBytes = new byte[ _prefixBytesCount + _generatedCharIndex + 1 + _suffixBytesCount ];
             
             // Prefix
-            Array.Copy( _prefixBytes, 0, NameBytes, 0, _prefixBytesCount );
+            if( _prefixBytesCount > 0 )
+                Array.Copy( PrefixBytes, 0, NameBytes, 0, _prefixBytesCount );
             
             // Generated chars
             for( int i = 0; i <= _generatedCharIndex; i++ )
                 NameBytes[_prefixBytesCount+i] = _charsetBytes[ _allCharsetIndexes[i] ];
 
             // Suffix
-            Array.Copy( _suffixBytes, 0, NameBytes, _prefixBytesCount+_generatedCharIndex+1, _suffixBytesCount );
+            if( _suffixBytesCount > 0 )
+                Array.Copy( SuffixBytes, 0, NameBytes, _prefixBytesCount+_generatedCharIndex+1, _suffixBytesCount );
         }
         
         // _generatedCharIndex is the number of generated chars - 1

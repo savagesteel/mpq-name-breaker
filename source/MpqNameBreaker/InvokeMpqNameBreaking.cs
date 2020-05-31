@@ -17,13 +17,21 @@ namespace MpqNameBreaker
             Mandatory = true,
             Position = 0,
             ValueFromPipelineByPropertyName = true)]
+        [AllowEmptyString()]
         public string Prefix { get; set; }
 
         [Parameter(
             Mandatory = true,
             Position = 0,
             ValueFromPipelineByPropertyName = true)]
+        [AllowEmptyString()]
         public string Suffix { get; set; }
+
+        [Parameter(
+            Mandatory = true,
+            Position = 1,
+            ValueFromPipelineByPropertyName = true)]
+        public HashType Type { get; set; }
 
         // Constants
         public const uint Hero1HashA = 0xba2c211d;
@@ -43,19 +51,21 @@ namespace MpqNameBreaker
             Hashtable hashLookup = new Hashtable()
             {
                 //{ 0xBA2C211D, "levels\\l1data\\hero1.dun" },
-                //{ 0xB29FC135, "unknownA" }
-                { 0x22_57_5C_4A, "unknownB" }
+                { 0xB29FC135, "unknownA" }
+                //{ 0x22_57_5C_4A, "unknownB" }
             };
 
-            uint hash;
+            uint prefixSeed1, prefixSeed2, hash;
             DateTime start = DateTime.Now;
-
-            // Initialize hash calculator
-            _hashCalculator = new HashCalculator();
 
             // Initialize brute force name generator
             _bruteForce = new BruteForce( Prefix, Suffix );
             _bruteForce.Initialize();
+
+            // Initialize hash calculator
+            _hashCalculator = new HashCalculator();
+            // Prepare prefix seeds to speed up calculation
+            (prefixSeed1, prefixSeed2) = _hashCalculator.HashStringOptimizedCalculateSeeds(_bruteForce.PrefixBytes, Type );
 
 
             WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
@@ -63,7 +73,8 @@ namespace MpqNameBreaker
             long count = 0;
             while( _bruteForce.NextName() && count < 4_347_792_138_496 )
             {
-                hash = _hashCalculator.HashString( _bruteForce.NameBytes, HashType.MpqHashNameB );
+                //hash = _hashCalculator.HashString( _bruteForce.NameBytes, HashType.MpqHashNameA );
+                hash = _hashCalculator.HashStringOptimized( _bruteForce.NameBytes, Type, _bruteForce.Prefix.Length, prefixSeed1, prefixSeed2 );
 
                 if( hashLookup.ContainsKey(hash) )
                 {
@@ -75,7 +86,6 @@ namespace MpqNameBreaker
                 {
                     TimeSpan elapsed = DateTime.Now - start;
                     WriteVerbose( String.Format("Time: {0} - Name: {1} - Count (million): {2}", elapsed.ToString(), _bruteForce.Name, (double)count/1_000_000) );
-
                 }
     
                 count++;
