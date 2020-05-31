@@ -6,6 +6,13 @@ This experimental work and has been successfully tested on:
 - .NET Core 3.1
 - PowerShell 7
 
+## Build
+
+```pwsh
+dotnet msbuild -property:Configuration=Release
+```
+
+
 ## Usage
 
 ```pwsh
