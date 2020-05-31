@@ -6,6 +6,7 @@ This experimental work and has been successfully tested on:
 - .NET Core 3.1
 - PowerShell 7
 
+
 ## Build
 
 ```pwsh
@@ -16,5 +17,6 @@ dotnet msbuild -property:Configuration=Release
 ## Usage
 
 ```pwsh
-Invoke-MpqNameBreaking -Hash 0xB29FC135u -Type MpqHashNameA -Prefix 'LEVELS\L1DATA\' -Suffix '.DUN' -Verbose
+# Name breaking for "gendata\cuttt.pal"
+Invoke-MpqNameBreaking -HashA 0xD50A0BCCu -HashB 0xB94F2DD2u -Prefix 'gendata\' -Suffix '.pal' -Verbose
 ```

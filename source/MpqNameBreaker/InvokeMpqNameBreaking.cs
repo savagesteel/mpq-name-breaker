@@ -17,13 +17,13 @@ namespace MpqNameBreaker
             Mandatory = true,
             Position = 0,
             ValueFromPipelineByPropertyName = true)]
-        public uint Hash { get; set; }
+        public uint HashA { get; set; }
 
         [Parameter(
             Mandatory = true,
             Position = 1,
             ValueFromPipelineByPropertyName = true)]
-        public HashType Type { get; set; }
+        public uint HashB { get; set; }
 
         [Parameter(
             Mandatory = true,
@@ -39,10 +39,6 @@ namespace MpqNameBreaker
         [AllowEmptyString()]
         public string Suffix { get; set; }
 
-
-        // Constants
-        public const uint Hero1HashA = 0xba2c211d;
-
         // Fields
         private BruteForce _bruteForce;
         private HashCalculator _hashCalculator;
@@ -55,7 +51,7 @@ namespace MpqNameBreaker
         // This method will be called for each input received from the pipeline to this cmdlet; if no input is received, this method is not called
         protected override void ProcessRecord()
         {
-            uint prefixSeed1, prefixSeed2, currentHash;
+            uint prefixSeed1A, prefixSeed2A, prefixSeed1B, prefixSeed2B, currentHashA, currentHashB;
             DateTime start = DateTime.Now;
 
             // Initialize brute force name generator
@@ -65,7 +61,8 @@ namespace MpqNameBreaker
             // Initialize hash calculator
             _hashCalculator = new HashCalculator();
             // Prepare prefix seeds to speed up calculation
-            (prefixSeed1, prefixSeed2) = _hashCalculator.HashStringOptimizedCalculateSeeds(_bruteForce.PrefixBytes, Type );
+            (prefixSeed1A, prefixSeed2A) = _hashCalculator.HashStringOptimizedCalculateSeeds( _bruteForce.PrefixBytes, HashType.MpqHashNameA );
+            (prefixSeed1B, prefixSeed2B) = _hashCalculator.HashStringOptimizedCalculateSeeds( _bruteForce.PrefixBytes, HashType.MpqHashNameB );
 
 
             WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
@@ -74,12 +71,23 @@ namespace MpqNameBreaker
             while( _bruteForce.NextName() && count < 4_347_792_138_496 )
             {
                 //currentHash = _hashCalculator.HashString( _bruteForce.NameBytes, Type );
-                currentHash = _hashCalculator.HashStringOptimized( _bruteForce.NameBytes, Type, _bruteForce.Prefix.Length, prefixSeed1, prefixSeed2 );
+                currentHashA = _hashCalculator.HashStringOptimized( _bruteForce.NameBytes, HashType.MpqHashNameA, _bruteForce.Prefix.Length, prefixSeed1A, prefixSeed2A );
 
-                if( Hash == currentHash )
+                if( HashA == currentHashA )
                 {
-                    WriteObject( "FOUND : " + _bruteForce.Name );
-                    break;       
+                    currentHashB = _hashCalculator.HashStringOptimized( _bruteForce.NameBytes, HashType.MpqHashNameB, _bruteForce.Prefix.Length, prefixSeed1B, prefixSeed2B );
+
+                    // Detect collisions
+                    if( HashB == currentHashB )
+                    {
+                        WriteObject( "Name found: " + _bruteForce.Name );
+                        WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
+                        break;
+                    }
+                    else
+                    {
+                        WriteWarning( "Hash A collision found on name: " + _bruteForce.Name );
+                    }
                 }
     
                 if( count % 100_000_000 == 0 )
@@ -90,9 +98,6 @@ namespace MpqNameBreaker
     
                 count++;
             }
-
-            WriteVerbose( _bruteForce.Name );
-            WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
         }
 
         // This method will be called once at the end of pipeline execution; if no input is received, this method is not called
