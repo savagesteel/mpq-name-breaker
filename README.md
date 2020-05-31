@@ -1,9 +1,7 @@
-# mpq-name-breaker
-Blizzard MPQ Name Breaking Tool
-
+# MPQ Name Breaker
 ## Information
 
-This tool a .NET Standard 2.0 PowerShell module that can be used to brute force MPQ name hashes.  
+This tool a .NET Standard 2.0 PowerShell module that can be used to brute force Blizzard MPQ archives' name hashes.  
 This experimental work and has been successfully tested on:
 - .NET Core 3.1
 - PowerShell 7
