@@ -90,10 +90,10 @@ namespace MpqNameBreaker
                     }
                 }
     
-                if( count % 100_000_000 == 0 )
+                if( count % 10_000_000_000 == 0 )
                 {
                     TimeSpan elapsed = DateTime.Now - start;
-                    WriteVerbose( String.Format("Time: {0} - Name: {1} - Count (million): {2}", elapsed.ToString(), _bruteForce.Name, (double)count/1_000_000) );
+                    WriteVerbose( String.Format("Time: {0} - Name: {1} - Count : {2:N0} billion", elapsed.ToString(), _bruteForce.Name, count/1_000_000_000) );
                 }
     
                 count++;
