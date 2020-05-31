@@ -17,21 +17,28 @@ namespace MpqNameBreaker
             Mandatory = true,
             Position = 0,
             ValueFromPipelineByPropertyName = true)]
-        [AllowEmptyString()]
-        public string Prefix { get; set; }
-
-        [Parameter(
-            Mandatory = true,
-            Position = 0,
-            ValueFromPipelineByPropertyName = true)]
-        [AllowEmptyString()]
-        public string Suffix { get; set; }
+        public uint Hash { get; set; }
 
         [Parameter(
             Mandatory = true,
             Position = 1,
             ValueFromPipelineByPropertyName = true)]
         public HashType Type { get; set; }
+
+        [Parameter(
+            Mandatory = true,
+            Position = 2,
+            ValueFromPipelineByPropertyName = true)]
+        [AllowEmptyString()]
+        public string Prefix { get; set; }
+
+        [Parameter(
+            Mandatory = true,
+            Position = 3,
+            ValueFromPipelineByPropertyName = true)]
+        [AllowEmptyString()]
+        public string Suffix { get; set; }
+
 
         // Constants
         public const uint Hero1HashA = 0xba2c211d;
@@ -48,14 +55,7 @@ namespace MpqNameBreaker
         // This method will be called for each input received from the pipeline to this cmdlet; if no input is received, this method is not called
         protected override void ProcessRecord()
         {
-            Hashtable hashLookup = new Hashtable()
-            {
-                //{ 0xBA2C211D, "levels\\l1data\\hero1.dun" },
-                { 0xB29FC135, "unknownA" }
-                //{ 0x22_57_5C_4A, "unknownB" }
-            };
-
-            uint prefixSeed1, prefixSeed2, hash;
+            uint prefixSeed1, prefixSeed2, currentHash;
             DateTime start = DateTime.Now;
 
             // Initialize brute force name generator
@@ -73,10 +73,10 @@ namespace MpqNameBreaker
             long count = 0;
             while( _bruteForce.NextName() && count < 4_347_792_138_496 )
             {
-                //hash = _hashCalculator.HashString( _bruteForce.NameBytes, HashType.MpqHashNameA );
-                hash = _hashCalculator.HashStringOptimized( _bruteForce.NameBytes, Type, _bruteForce.Prefix.Length, prefixSeed1, prefixSeed2 );
+                //currentHash = _hashCalculator.HashString( _bruteForce.NameBytes, Type );
+                currentHash = _hashCalculator.HashStringOptimized( _bruteForce.NameBytes, Type, _bruteForce.Prefix.Length, prefixSeed1, prefixSeed2 );
 
-                if( hashLookup.ContainsKey(hash) )
+                if( Hash == currentHash )
                 {
                     WriteObject( "FOUND : " + _bruteForce.Name );
                     break;       
@@ -93,7 +93,6 @@ namespace MpqNameBreaker
 
             WriteVerbose( _bruteForce.Name );
             WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
-
         }
 
         // This method will be called once at the end of pipeline execution; if no input is received, this method is not called
