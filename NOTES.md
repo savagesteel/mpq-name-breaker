@@ -20,25 +20,21 @@ Charset:
 ```
 
 Brute force up-to:
-- `LEVELS\x.DUN`
-    - `2XE-PNIJ`
-- `LEVELS\DATA\x.DUN`
-    - `0D5DT_Q_`
-- `LEVELS\LDATA\x.DUN`
-    - `2OHOP_R_`
-- `LEVELS\L0DATA\x.DUN`
-    - `3JPR72BC`
-- `LEVELS\L1DATA\x.DUN`
-    - `07HWXBLC`
-- `LEVELS\L1DATA\HERx.DUN`
-    - `3JS28UR`
-- `LEVELS\L1DATA\xHERO.DUN`
-    - `1E_E1PM`
-- `LEVELS\L1DATA\HALx.DUN`
-    - `2C3WHUQ`
-- `LEVELS\L1DATA\xHALL.DUN`
-    - `0HVHIGY`
-- `LEVELS2\L1DATA\x.DUN`
-    - `018VM3JJ`
-- `LEVELS2\L1DATA\HERx.DUN`
-    - `1-FDIB3`
+
+| Name Pattern              | Pattern Chars |
+| ------------------------- | ------------- |
+| `LEVELS\x.DUN`            | `2XE-PNIJ`    |
+| `LEVELS\DATA\x.DUN`       | `0D5DT_Q_`    |
+| `LEVELS\LDATA\x.DUN`      | `2OHOP_R_`    |
+| `LEVELS\L0DATA\x.DUN`     | `3JPR72BC`    |
+| `LEVELS\L1DATA\x.DUN`     | `07HWXBLC`    |
+| `LEVELS\L1DATA\HERx.DUN`  | `3JS28UR`     |
+| `LEVELS\L1DATA\xHERO.DUN` | `2RF0-PK`     |
+| `LEVELS\L1DATA\HALx.DUN`  | `2C3WHUQ`     |
+| `LEVELS\L1DATA\xHALL.DUN` | `0HVHIGY`     |
+| `LEVELS2\L1DATA\x.DUN`    | `018VM3JJ`    |
+| `LEVELS2\L1DATA\HERx.DUN` | `1-FDIB3`     |
+|  |  |
+|  |  |
+|  |  |
+|  |  |
