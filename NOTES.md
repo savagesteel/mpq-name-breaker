@@ -6,6 +6,14 @@
 Hash A: `0xB29FC135`  
 Hash B: `0x22575C4A`
 
+### Name
+
+The name is alphabetically between:
+- `items\wshield.cel`
+- `levels\l1data\hero1.dun`
+
+The file is a dungeon map so the extension is likely `.dun`
+
 ### Command line
 
 ```pwsh
