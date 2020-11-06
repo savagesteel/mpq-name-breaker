@@ -11,7 +11,7 @@ namespace MpqNameBreaker
 {
     [Cmdlet(VerbsLifecycle.Invoke,"MpqNameBreaking")]
     [OutputType(typeof(string))]
-    public class InvokeMpqNameBreakerCommand : PSCmdlet
+    public class InvokeMpqNameBreakingCommand : PSCmdlet
     {
         [Parameter(
             Mandatory = true,

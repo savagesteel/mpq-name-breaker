@@ -15,7 +15,7 @@
         "-NoLogo",
         "-NoProfile",
         "-Command",
-        "Import-Module ./bin/Debug/netstandard2.0/MpqNameBreaker.dll"
+        "Import-Module ./bin/Debug/netstandard2.1/MpqNameBreaker.dll"
       ],
       "cwd": "${workspaceFolder}",
       "console": "externalTerminal",
