@@ -60,20 +60,35 @@ namespace MpqNameBreaker
 
             WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
 
-
-            using (var context = new Context())
+            var context = new Context();
+            // For each available accelerator...
+            foreach( var acceleratorId in Accelerator.Accelerators )
             {
-                // For each available accelerator...
-                foreach (var acceleratorId in Accelerator.Accelerators)
+                // Instanciate the Nvidia (CUDA) accelerator
+                if( acceleratorId.AcceleratorType == AcceleratorType.Cuda )
                 {
-                    // Create default accelerator for the given accelerator id
-                    using (var accelerator = Accelerator.Create(context, acceleratorId))
-                    {
-                        WriteVerbose($"Performing operations on {accelerator}");
-                        WriteObject(accelerator);
-                    }
+                    var accelerator = Accelerator.Create( context, acceleratorId );
+                    WriteObject( accelerator );
+
+                    // Load kernel
+                    var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1, ArrayView<int>, int>( Mpq.HashCalculatorGpu.MyKernel );
+
+                    var buffer = accelerator.Allocate<int>(102400000);
+                    
+                    // Launch buffer.Length many threads and pass a view to buffer
+                    // Note that the kernel launch does not involve any boxing
+                    kernel(buffer.Length, buffer.View, 42);
+
+                    // Wait for the kernel to finish...
+                    accelerator.Synchronize();
+
+                    // Resolve and verify data
+                    var data = buffer.GetAsArray();
+                    var test = data[1024];
                 }
             }
+
+
 
 
 
