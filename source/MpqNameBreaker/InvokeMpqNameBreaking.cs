@@ -68,6 +68,7 @@ namespace MpqNameBreaker
             WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
 
             long count = 0;
+            // 38^8 = 4_347_792_138_496
             while( _bruteForce.NextName() && count < 4_347_792_138_496 )
             {
                 //currentHash = _hashCalculator.HashString( _bruteForce.NameBytes, Type );
