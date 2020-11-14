@@ -87,15 +87,16 @@ namespace MpqNameBreaker.Mpq
             }
         }
 
-        public static void HashStringBatchA(
+        public static void HashStringsBatchA(
             Index1 index,
-            ArrayView2D<byte> strings,  // 2D array containing one string batch to compute hashes for (one string per line)
-            uint hashLookup,            // The hash that we are looking for
-            ArrayView<uint> cryptTable, // 1D array crypt table used for hash computation
-            int prefixLength,           // String prefix length
-            uint seed1,                 // Pre-computed seed 1 for the string prefix
-            uint seed2,                 // Pre-computed seed 2 for the string prefix
-            ArrayView<int> found        // 1D array with one element (value is set to 1 if the hash is found in the batch)
+            ArrayView<byte> charset,
+            ArrayView2D<int> charsetIndexes,    // 2D array containing the char indexes of one batch string to compute hashes for (one string per line)
+            uint hashLookup,                    // The hash that we are looking for
+            ArrayView<uint> cryptTable,         // 1D array crypt table used for hash computation
+            int prefixLength,                   // String prefix length
+            uint seed1,                         // Pre-computed seed 1 for the string prefix
+            uint seed2,                         // Pre-computed seed 2 for the string prefix
+            ArrayView<int> found                // 1D array with one element (value is set to 1 if the hash is found in the batch)
         )
         {
             // Current char of the processed string
@@ -104,13 +105,13 @@ namespace MpqNameBreaker.Mpq
             // Hash type A
             int type = 0x100;
 
-            for( int i = prefixLength; i < strings.Height; i++ )
+            for( int i = prefixLength; i < charsetIndexes.Height; i++ )
             {
                 // Build 2D index for the strings 2D array
                 Index2 idx = new Index2( index.X, i );
 
                 // Retrieve the current char of the string
-                ch = strings[idx];
+                ch = charset[ charsetIndexes[idx] ];
 
                 // Break if we reached the end of the string (\0)
                 if( ch == 0 )

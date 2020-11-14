@@ -12,6 +12,8 @@ namespace MpqNameBreaker.NameGenerator
 
         // Properties
 
+        public byte[] CharsetBytes { get; private set; }
+
         // The number of name seeds that will be generated
         public int BatchSize { get; private set; }
 
@@ -21,19 +23,18 @@ namespace MpqNameBreaker.NameGenerator
 
         // The batch seeds are stored in a 2D array.
         // Each line contains the bytes of one seed name string.
-        public byte[,] BatchSeedNameBytes { get; private set; }
+        public int[,] BatchSeedNameIndexes { get; private set; }
 
         public bool Initialized { get; private set; }
 
         // Fields
-        private byte[] _charsetBytes;
         
         // Constructors
         public BruteForceBatches()
         {
             Initialized = false;
 
-            _charsetBytes = Encoding.ASCII.GetBytes( Charset.ToUpper() );
+            CharsetBytes = Encoding.ASCII.GetBytes( Charset.ToUpper() );
         }
 
         public BruteForceBatches( int size, int charCount ) : this()
@@ -41,7 +42,7 @@ namespace MpqNameBreaker.NameGenerator
             this.BatchSize = size;
             this.BatchItemCharCount = charCount;
 
-            BatchSeedNameBytes = new byte[ size, MaxGeneratedChars ];
+            BatchSeedNameIndexes = new int[ size, MaxGeneratedChars ];
         }
 
 
@@ -51,11 +52,14 @@ namespace MpqNameBreaker.NameGenerator
             Initialized = true;
         }
 
+        public bool NextSeedPrefix()
+        {
+
+            return true;
+        }
 
         public bool NextBatch()
         {
-
-
 
             return false;
         }
