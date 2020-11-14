@@ -45,6 +45,7 @@ namespace MpqNameBreaker
         // Fields
         private BruteForce _bruteForce;
         private HashCalculator _hashCalculator;
+        private HashCalculatorGpu _hashCalculatorGpu;
 
         // This method gets called once for each cmdlet in the pipeline when the pipeline starts executing
         protected override void BeginProcessing()
@@ -57,7 +58,7 @@ namespace MpqNameBreaker
             uint prefixSeed1A, prefixSeed2A, prefixSeed1B, prefixSeed2B, currentHashA, currentHashB;
             DateTime start = DateTime.Now;
 
-
+/*
             WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
 
             var context = new Context();
@@ -70,7 +71,7 @@ namespace MpqNameBreaker
                     var accelerator = Accelerator.Create( context, acceleratorId );
                     WriteObject( accelerator );
 
-/*
+
                     // Load kernel
                     var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1, ArrayView<int>, int>( Mpq.HashCalculatorGpu.MyKernel );
 
@@ -86,7 +87,7 @@ namespace MpqNameBreaker
                     // Resolve and verify data
                     var data = buffer.GetAsArray();
                     var test = data[1024];
-*/
+
                     // Load kernel
                     var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1, ArrayView2D<byte>>( Mpq.HashCalculatorGpu.MyKernel2 );
 
@@ -103,23 +104,28 @@ namespace MpqNameBreaker
                     var data = buffer.GetAs2DArray();
                 }
             }
-/*
+*/
+
             // Initialize brute force name generator
             _bruteForce = new BruteForce( Prefix, Suffix );
             _bruteForce.Initialize();
 
-            // Initialize hash calculator
+            // Initialize classic CPU hash calculator and pre-calculate prefix seeds
             _hashCalculator = new HashCalculator();
-            // Prepare prefix seeds to speed up calculation
             (prefixSeed1A, prefixSeed2A) = _hashCalculator.HashStringOptimizedCalculateSeeds( _bruteForce.PrefixBytes, HashType.MpqHashNameA );
             (prefixSeed1B, prefixSeed2B) = _hashCalculator.HashStringOptimizedCalculateSeeds( _bruteForce.PrefixBytes, HashType.MpqHashNameB );
 
+            // Initialize GPU hash calculator
+            _hashCalculatorGpu = new HashCalculatorGpu();
+
+
+
             WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
 
+/*
             long count = 0;
             while( _bruteForce.NextName() && count < 4_347_792_138_496 )
             {
-                //currentHash = _hashCalculator.HashString( _bruteForce.NameBytes, Type );
                 currentHashA = _hashCalculator.HashStringOptimized( _bruteForce.NameBytes, HashType.MpqHashNameA, _bruteForce.Prefix.Length, prefixSeed1A, prefixSeed2A );
 
                 if( HashA == currentHashA )
@@ -146,6 +152,7 @@ namespace MpqNameBreaker
                 }
     
                 count++;
+
             }
 */
         }
