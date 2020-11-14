@@ -122,6 +122,10 @@ namespace MpqNameBreaker
 
             WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
 
+            WriteObject(_hashCalculatorGpu.Accelerator);
+
+
+
 /*
             long count = 0;
             while( _bruteForce.NextName() && count < 4_347_792_138_496 )

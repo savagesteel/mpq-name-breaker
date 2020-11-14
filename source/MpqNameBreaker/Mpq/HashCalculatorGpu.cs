@@ -17,13 +17,16 @@ namespace MpqNameBreaker.Mpq
         // Properties
         public uint[] CryptTable {get; private set;}
 
+        public Accelerator Accelerator {get; private set;}
+
         // Fields
 
 
         // Constructors
         public HashCalculatorGpu()
-        {
+        { 
             InitializeCryptTable();
+            InitializeGpuAccelarator();
         }
 
         // Methods
@@ -50,6 +53,20 @@ namespace MpqNameBreaker.Mpq
                     temp2  = (seed & 0xFFFF);
 
                     CryptTable[index2] = (temp1 | temp2);
+                }
+            }
+        }
+
+        public void InitializeGpuAccelarator()
+        {
+            var context = new Context();
+            // For each available accelerator...
+            foreach( var acceleratorId in Accelerator.Accelerators )
+            {
+                // Instanciate the Nvidia (CUDA) accelerator
+                if( acceleratorId.AcceleratorType == AcceleratorType.Cuda )
+                {
+                    Accelerator = Accelerator.Create( context, acceleratorId );
                 }
             }
         }
