@@ -70,6 +70,7 @@ namespace MpqNameBreaker
                     var accelerator = Accelerator.Create( context, acceleratorId );
                     WriteObject( accelerator );
 
+/*
                     // Load kernel
                     var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1, ArrayView<int>, int>( Mpq.HashCalculatorGpu.MyKernel );
 
@@ -85,13 +86,23 @@ namespace MpqNameBreaker
                     // Resolve and verify data
                     var data = buffer.GetAsArray();
                     var test = data[1024];
+*/
+                    // Load kernel
+                    var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1, ArrayView2D<byte>>( Mpq.HashCalculatorGpu.MyKernel2 );
+
+                    var buffer = accelerator.Allocate<byte>(1024,64);
+                    
+                    // Launch buffer.Width many threads and pass a view to buffer
+                    // Note that the kernel launch does not involve any boxing
+                    kernel(buffer.Width, buffer.View);
+
+                    // Wait for the kernel to finish...
+                    accelerator.Synchronize();
+
+                    // Resolve and verify data
+                    var data = buffer.GetAs2DArray();
                 }
             }
-
-
-
-
-
 /*
             // Initialize brute force name generator
             _bruteForce = new BruteForce( Prefix, Suffix );

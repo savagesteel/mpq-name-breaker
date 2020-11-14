@@ -13,6 +13,14 @@ namespace MpqNameBreaker.Mpq
         {
             dataView[index] = index + constant;
         }
+
+        public static void MyKernel2( Index1 index, ArrayView2D<byte> dataView )
+        {
+            for( int i = 0; i < dataView.Height; i++ )
+            {
+                dataView[new Index2(index.X, i)] = (byte)i;
+            }
+        }
     }
 
 }
