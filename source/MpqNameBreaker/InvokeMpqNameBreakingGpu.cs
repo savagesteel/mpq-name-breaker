@@ -44,6 +44,7 @@ namespace MpqNameBreaker
 
         // Fields
         private BruteForce _bruteForce;
+        private BruteForceBatches _bruteForceBatches;
         private HashCalculator _hashCalculator;
         private HashCalculatorGpu _hashCalculatorGpu;
 
@@ -115,6 +116,9 @@ namespace MpqNameBreaker
             (prefixSeed1A, prefixSeed2A) = _hashCalculator.HashStringOptimizedCalculateSeeds( _bruteForce.PrefixBytes, HashType.MpqHashNameA );
             (prefixSeed1B, prefixSeed2B) = _hashCalculator.HashStringOptimizedCalculateSeeds( _bruteForce.PrefixBytes, HashType.MpqHashNameB );
 
+            // Initialize brute force batches name generator
+            _bruteForceBatches = new BruteForceBatches( 1024, 5 ); // Batch size 1024 name seeds
+
             // Initialize GPU hash calculator
             _hashCalculatorGpu = new HashCalculatorGpu();
 
@@ -122,14 +126,16 @@ namespace MpqNameBreaker
 
             WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
 
-            WriteObject(_hashCalculatorGpu.Accelerator);
+            WriteObject( _hashCalculatorGpu.Accelerator );
 
 
-
-/*
             long count = 0;
-            while( _bruteForce.NextName() && count < 4_347_792_138_496 )
+            while( _bruteForceBatches.NextBatch() )
             {
+                //int[,] batch;
+
+
+                /*
                 currentHashA = _hashCalculator.HashStringOptimized( _bruteForce.NameBytes, HashType.MpqHashNameA, _bruteForce.Prefix.Length, prefixSeed1A, prefixSeed2A );
 
                 if( HashA == currentHashA )
@@ -149,7 +155,8 @@ namespace MpqNameBreaker
                     }
                 }
     
-                if( count % 10_000_000_000 == 0 )
+                */
+                if( count % 1_000_000_000 == 0 )
                 {
                     TimeSpan elapsed = DateTime.Now - start;
                     WriteVerbose( String.Format("Time: {0} - Name: {1} - Count : {2:N0} billion", elapsed.ToString(), _bruteForce.Name, count/1_000_000_000) );
@@ -158,7 +165,8 @@ namespace MpqNameBreaker
                 count++;
 
             }
-*/
+
+
         }
 
         // This method will be called once at the end of pipeline execution; if no input is received, this method is not called
