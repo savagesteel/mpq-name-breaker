@@ -118,6 +118,7 @@ namespace MpqNameBreaker
 
             // Initialize brute force batches name generator
             _bruteForceBatches = new BruteForceBatches( 1024, 5 ); // Batch size 1024 name seeds
+            _bruteForceBatches.Initialize();
 
             // Initialize GPU hash calculator
             _hashCalculatorGpu = new HashCalculatorGpu();
@@ -132,7 +133,8 @@ namespace MpqNameBreaker
             long count = 0;
             while( _bruteForceBatches.NextBatch() )
             {
-                //int[,] batch;
+                string[] names = _bruteForceBatches.BatchNames;
+
 
 
                 /*
