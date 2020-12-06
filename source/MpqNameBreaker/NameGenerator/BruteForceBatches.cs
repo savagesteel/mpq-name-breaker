@@ -53,7 +53,7 @@ namespace MpqNameBreaker.NameGenerator
         private byte[] _charsetBytes;
 
         private int _generatedCharIndex;
-        private int[] _allCharsetIndexes;
+        private int[] _nameCharsetIndexes;
 
 
         
@@ -77,9 +77,9 @@ namespace MpqNameBreaker.NameGenerator
         public void Initialize()
         {
             // Initialize an array to keep track of the indexes of each char in the charset
-            _allCharsetIndexes = new int[MaxGeneratedChars];
+            _nameCharsetIndexes = new int[MaxGeneratedChars];
             for( int i = 0; i < MaxGeneratedChars; ++i )
-                _allCharsetIndexes[i] = -1;
+                _nameCharsetIndexes[i] = -1;
 
             Initialized = true;
         }
@@ -93,7 +93,7 @@ namespace MpqNameBreaker.NameGenerator
                 return false;
 
             // If we are AT the last char of the charset
-            if( _allCharsetIndexes[_generatedCharIndex] == _charsetBytes.Length-1 )
+            if( _nameCharsetIndexes[_generatedCharIndex] == _charsetBytes.Length-1 )
             {
                 bool increaseNameSize = false;
 
@@ -101,9 +101,9 @@ namespace MpqNameBreaker.NameGenerator
                 for( int i = _generatedCharIndex; i >= 0; --i )
                 {
                     // If we are at the last char of the charset then go back to the first char
-                    if( _allCharsetIndexes[i] == _charsetBytes.Length-1 )
+                    if( _nameCharsetIndexes[i] == _charsetBytes.Length-1 )
                     {
-                        _allCharsetIndexes[i] = 0;
+                        _nameCharsetIndexes[i] = 0;
                         
                         if( i == 0 )
                             increaseNameSize = true;
@@ -111,7 +111,7 @@ namespace MpqNameBreaker.NameGenerator
                     // If we are not at the last char of the charset then move to next char
                     else
                     {
-                        _allCharsetIndexes[i]++;
+                        _nameCharsetIndexes[i]++;
                         break;
                     }
                 }
@@ -120,14 +120,14 @@ namespace MpqNameBreaker.NameGenerator
                 {
                     // Increase name size by one char
                     _generatedCharIndex++;
-                    _allCharsetIndexes[_generatedCharIndex] = 0;
+                    _nameCharsetIndexes[_generatedCharIndex] = 0;
                 }
             }
             // If the generated char is within the charset
             else
             {
                 // Move to next char
-                _allCharsetIndexes[_generatedCharIndex]++;
+                _nameCharsetIndexes[_generatedCharIndex]++;
             }
 
             return true;
@@ -141,7 +141,7 @@ namespace MpqNameBreaker.NameGenerator
                 // Copy name bytes in the batch 2D array
                 for( int i = 0; i < MaxGeneratedChars; ++i )
                 {
-                    BatchNameSeedCharsetIndexes[count,i] = _allCharsetIndexes[i];
+                    BatchNameSeedCharsetIndexes[count,i] = _nameCharsetIndexes[i];
                 }
 
                 // Copy additional seed bytes to the 2D array
