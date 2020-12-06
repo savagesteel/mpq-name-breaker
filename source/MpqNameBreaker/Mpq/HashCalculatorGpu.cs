@@ -90,13 +90,15 @@ namespace MpqNameBreaker.Mpq
         public static void HashStringsBatchA(
             Index1 index,
             ArrayView<byte> charset,
-            ArrayView2D<int> charsetIndexes,    // 2D array containing the char indexes of one batch string to compute hashes for (one string per line)
+            ArrayView2D<int> charsetIndexes,    // 2D array containing the char indexes of one batch string seed (one string per line, hashes will be computed starting from this string)
+            // ArrayView2D<int> charsetStopIndexes // 2D array containing the char indexes where the batch will stop
             uint hashLookup,                    // The hash that we are looking for
             ArrayView<uint> cryptTable,         // 1D array crypt table used for hash computation
             int prefixLength,                   // String prefix length
             uint seed1,                         // Pre-computed seed 1 for the string prefix
             uint seed2,                         // Pre-computed seed 2 for the string prefix
             ArrayView<int> found                // 1D array with one element (value is set to 1 if the hash is found in the batch)
+            // ? // Structure to hold the index in charsetIndexes when there's a hash match
         )
         {
             // Current char of the processed string
@@ -126,6 +128,12 @@ namespace MpqNameBreaker.Mpq
             {
                 found[0] = 1;
             }
+
+
+            // TODO: Check if the last name of the seed is reached
+            // TODO: Add code to move to next name accordingly
+
+
         }
 
     }
