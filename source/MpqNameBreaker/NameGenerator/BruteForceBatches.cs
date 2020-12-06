@@ -21,7 +21,7 @@ namespace MpqNameBreaker.NameGenerator
 
         // The batch seeds are stored in a 2D array.
         // Each line contains the bytes of one seed name string.
-        public byte[,] BatchNameSeedBytes { get; private set; }
+        public int[,] BatchNameSeedCharsetIndexes { get; private set; }
         public string[] BatchNames { 
             get {
                 string[] res = new string[BatchSize];
@@ -34,10 +34,13 @@ namespace MpqNameBreaker.NameGenerator
                     res[i] = "";
                     for( int j = 0; j < MaxGeneratedChars; ++j )
                     {
-                        if( BatchNameSeedBytes[i,j] == 0 )
+                        int idx = BatchNameSeedCharsetIndexes[i,j];
+                        //int nextIdx = BatchNameSeedCharsetIndexes[i+1,j];
+                        
+                        if( idx == -1 )
                             break;
 
-                        res[i] += Convert.ToChar(BatchNameSeedBytes[i,j]);
+                        res[i] += Convert.ToChar( _charsetBytes[ idx ] );
                     }
                 }
                 return res;
@@ -48,8 +51,6 @@ namespace MpqNameBreaker.NameGenerator
 
         // Fields
         private byte[] _charsetBytes;
-
-        private byte[] _nameBytes;
 
         private int _generatedCharIndex;
         private int[] _allCharsetIndexes;
@@ -69,7 +70,7 @@ namespace MpqNameBreaker.NameGenerator
             this.BatchSize = size;
             this.BatchItemCharCount = charCount;
 
-            BatchNameSeedBytes = new byte[ size, MaxGeneratedChars ];
+            BatchNameSeedCharsetIndexes = new int[ size, MaxGeneratedChars ];
         }
 
         // Methods
@@ -78,30 +79,11 @@ namespace MpqNameBreaker.NameGenerator
             // Initialize an array to keep track of the indexes of each char in the charset
             _allCharsetIndexes = new int[MaxGeneratedChars];
             for( int i = 0; i < MaxGeneratedChars; ++i )
-                _allCharsetIndexes[i] = 0;
-
-            // We start with one generated character plus prefix and suffix length
-            _nameBytes = new byte[ 1 ];
+                _allCharsetIndexes[i] = -1;
 
             Initialized = true;
         }
 
-        public void RefreshNameChar( int generatedCharIndex )
-        {
-            _nameBytes[generatedCharIndex] = _charsetBytes[ _allCharsetIndexes[generatedCharIndex] ];
-        }
-
-        public void RefreshNameAllChars()
-        {
-            _nameBytes = new byte[ _generatedCharIndex + 1 ];
-            
-            // Generated chars
-            for( int i = 0; i <= _generatedCharIndex; i++ )
-                _nameBytes[i] = _charsetBytes[ _allCharsetIndexes[i] ];
-        }
-        
-        // _generatedCharIndex is the number of generated chars - 1
-        // rename to _nameCharIndex?
         public bool NextBatchNameSeed()
         {
             if( !Initialized )
@@ -110,19 +92,18 @@ namespace MpqNameBreaker.NameGenerator
             if( _generatedCharIndex == MaxGeneratedChars )
                 return false;
 
-            // If we are AFTER the last char of the charset
-            if( _allCharsetIndexes[_generatedCharIndex] == _charsetBytes.Length )
+            // If we are AT the last char of the charset
+            if( _allCharsetIndexes[_generatedCharIndex] == _charsetBytes.Length-1 )
             {
                 bool increaseNameSize = false;
 
                 // Go through all the charset indexes in reverse order
-                for( int i = _generatedCharIndex; i >= 0; i-- )
+                for( int i = _generatedCharIndex; i >= 0; --i )
                 {
                     // If we are at the last char of the charset then go back to the first char
-                    if( _allCharsetIndexes[i] >= _charsetBytes.Length-1 )
+                    if( _allCharsetIndexes[i] == _charsetBytes.Length-1 )
                     {
                         _allCharsetIndexes[i] = 0;
-                        RefreshNameChar(i);
                         
                         if( i == 0 )
                             increaseNameSize = true;
@@ -131,33 +112,23 @@ namespace MpqNameBreaker.NameGenerator
                     else
                     {
                         _allCharsetIndexes[i]++;
-                        RefreshNameChar(i);
                         break;
                     }
                 }
-
-                //_allCharsetIndexes[_generatedCharIndex] = 0;
 
                 if( increaseNameSize )
                 {
                     // Increase name size by one char
                     _generatedCharIndex++;
-                    RefreshNameAllChars();
-                }
-                else
-                {
-                    RefreshNameChar( _generatedCharIndex );
+                    _allCharsetIndexes[_generatedCharIndex] = 0;
                 }
             }
-            // If we are in the charset
+            // If the generated char is within the charset
             else
             {
-                RefreshNameChar( _generatedCharIndex );
-
+                // Move to next char
+                _allCharsetIndexes[_generatedCharIndex]++;
             }
-
-            // Move to next char
-            _allCharsetIndexes[_generatedCharIndex]++;
 
             return true;
         }
@@ -168,15 +139,15 @@ namespace MpqNameBreaker.NameGenerator
             while( NextBatchNameSeed() && count < BatchSize )
             {
                 // Copy name bytes in the batch 2D array
-                for( int i = 0; i < _nameBytes.Length; ++i )
+                for( int i = 0; i < MaxGeneratedChars; ++i )
                 {
-                    BatchNameSeedBytes[count,i] = _nameBytes[i];
+                    BatchNameSeedCharsetIndexes[count,i] = _allCharsetIndexes[i];
                 }
 
                 // Copy additional seed bytes to the 2D array
-                for( int j = _nameBytes.Length; j < _nameBytes.Length+BatchItemCharCount; j++ )
+                for( int j = _generatedCharIndex+1; j < _generatedCharIndex+1+BatchItemCharCount; j++ )
                 {
-                    BatchNameSeedBytes[count,j] = _charsetBytes[0];
+                    BatchNameSeedCharsetIndexes[count,j] = 0;
                 }     
 
                 count++;
