@@ -93,7 +93,8 @@ namespace MpqNameBreaker.Mpq
             ArrayView<uint> cryptTable,             // 1D array crypt table used for hash computation
             ArrayView2D<int> charsetIndexes,        // 2D array containing the char indexes of one batch string seed (one string per line, hashes will be computed starting from this string)
             ArrayView<byte> suffixBytes,            // 1D array holding the indexes of the suffix chars
-            uint hashLookup,                        // The hash that we are looking for
+            uint hashALookup,                       // The hash A that we are looking for
+            uint hashBLookup,                       // The hash B that we are looking for
             uint seed1,                             // Pre-computed seed 1 for the string prefix
             uint seed2,                             // Pre-computed seed 2 for the string prefix
             int nameCount,                          // Name count limit (used as return condition)
@@ -106,29 +107,34 @@ namespace MpqNameBreaker.Mpq
             // Hash type A
             int type = 0x100;
 
+            uint s1 = seed1;
+            uint s2 = seed2;
+
             while( nameCount != 0 )
             {
-    /*
-                for( int i = prefixLength; i < charsetIndexes.Height; i++ )
+
+                for( int i = 0; i < charsetIndexes.Height; i++ )
                 {
                     // Build 2D index for the strings 2D array
                     Index2 idx = new Index2( index.X, i );
-
+                                        
                     // Retrieve the current char of the string
-                    ch = charset[ charsetIndexes[idx] ];
+                    Index1 charsetIdx = charsetIndexes[new Index2( index.X, i )];
 
-                    // Break if we reached the end of the string (\0)
-                    if( ch == 0 )
+                    if( charsetIdx == -1 ) // break if end of the string is reached
                         break;
-                    
-                    seed1 = cryptTable[type + ch] ^ (seed1 + seed2);
-                    seed2 = ch + seed1 + seed2 + (seed2 << 5) + 3;
+
+                    ch = charset[ charsetIdx ];
+
+                    // Hash calculation                    
+                    s1 = cryptTable[type + ch] ^ (s1 + s2);
+                    s2 = ch + s1 + s2 + (s2 << 5) + 3;
                 }
 
                 // TODO: Process suffix
 
                 // Check if it matches the hash that we are looking for
-                if( seed1 == hashLookup )
+                if( seed1 == hashALookup )
                 {
                     // TODO: Check hash B
 
@@ -136,7 +142,7 @@ namespace MpqNameBreaker.Mpq
 
                     // if hash B does not match display collision name
                 }
-    */
+
 
                 // TODO: Add code to move to next name
 

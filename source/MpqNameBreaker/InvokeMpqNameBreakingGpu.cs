@@ -147,6 +147,7 @@ namespace MpqNameBreaker
                     uint,
                     uint,
                     uint,
+                    uint,
                     int,
                     ArrayView<int>
                 >( Mpq.HashCalculatorGpu.HashStringsBatchA );
@@ -183,7 +184,7 @@ namespace MpqNameBreaker
             while( _bruteForceBatches.NextBatch() )
             {
                 // Debug
-                //string[] names = _bruteForceBatches.BatchNames;
+                string[] names = _bruteForceBatches.BatchNames;
 
                 // Copy char indexes to buffer
                 charsetIndexesBuffer.CopyFrom( 
@@ -191,7 +192,8 @@ namespace MpqNameBreaker
 
                 // Call the kernel
                 kernel( charsetIndexesBuffer.Width, charsetBuffer.View, cryptTableBuffer.View,
-                    charsetIndexesBuffer.View, suffixBytesBuffer.View, 0, 0, 0, nameCount, foundNameCharsetIndexesBuffer.View );
+                    charsetIndexesBuffer.View, suffixBytesBuffer.View, HashA, HashB, prefixSeed1A, prefixSeed2A,
+                    nameCount, foundNameCharsetIndexesBuffer.View );
 
                 // Wait for the kernel to complete
                 _hashCalculatorGpu.Accelerator.Synchronize();
@@ -222,7 +224,7 @@ namespace MpqNameBreaker
                 billionCount += oneBatchBillionCount;
                 if( tempCount < billionCount )
                 {
-                    tempCount = billionCount + 100_000;
+                    tempCount = billionCount + 1;
                     TimeSpan elapsed = DateTime.Now - start;
                     WriteVerbose( String.Format("Time: {0} - Count : {1:N0} billion", elapsed.ToString(), billionCount) );
                 }
