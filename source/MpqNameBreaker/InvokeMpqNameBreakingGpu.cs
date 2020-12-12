@@ -136,6 +136,23 @@ namespace MpqNameBreaker
             // Initialize GPU hash calculator
             _hashCalculatorGpu = new HashCalculatorGpu();
 
+            // Load kernel (GPU function)
+            // This function will calculate HashA for each name of a batch and report matches/collisions
+            var kernel = _hashCalculatorGpu.Accelerator.LoadAutoGroupedStreamKernel< 
+                    Index1,
+                    ArrayView<byte>,
+                    ArrayView2D<int>,
+                    uint, ArrayView<uint>,
+                    int,
+                    uint,
+                    uint,
+                    ArrayView<int>
+                >( Mpq.HashCalculatorGpu.HashStringsBatchA );
+
+            // Prepare data
+            
+
+
 
 
             WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));

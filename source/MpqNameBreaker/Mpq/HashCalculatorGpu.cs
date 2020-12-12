@@ -106,7 +106,7 @@ namespace MpqNameBreaker.Mpq
 
             // Hash type A
             int type = 0x100;
-
+/*
             for( int i = prefixLength; i < charsetIndexes.Height; i++ )
             {
                 // Build 2D index for the strings 2D array
@@ -132,7 +132,7 @@ namespace MpqNameBreaker.Mpq
 
             // TODO: Check if the last name of the seed is reached
             // TODO: Add code to move to next name accordingly
-
+*/
 
         }
 
