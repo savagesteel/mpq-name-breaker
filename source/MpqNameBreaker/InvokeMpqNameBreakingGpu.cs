@@ -141,32 +141,44 @@ namespace MpqNameBreaker
             var kernel = _hashCalculatorGpu.Accelerator.LoadAutoGroupedStreamKernel< 
                     Index1,
                     ArrayView<byte>,
+                    ArrayView<uint>,
                     ArrayView2D<int>,
-                    uint, ArrayView<uint>,
+                    ArrayView<byte>,
+                    uint,
+                    uint,
+                    uint,
                     int,
-                    uint,
-                    uint,
                     ArrayView<int>
                 >( Mpq.HashCalculatorGpu.HashStringsBatchA );
 
-            // Prepare data
+            // Prepare data for the kernel
             var charsetBuffer = _hashCalculatorGpu.Accelerator.Allocate<byte>( _bruteForceBatches.CharsetBytes.Length );
             charsetBuffer.CopyFrom( _bruteForceBatches.CharsetBytes, 0, 0, _bruteForceBatches.CharsetBytes.Length );
 
             var charsetIndexesBuffer = _hashCalculatorGpu.Accelerator.Allocate<int>( GpuBatchSize, BruteForceBatches.MaxGeneratedChars );
 
+            var suffixBytesBuffer = _hashCalculatorGpu.Accelerator.Allocate<byte>( Suffix.Length );
+            if( Suffix.Length > 0 )
+            {
+                byte[] suffixBytes = Encoding.ASCII.GetBytes( Suffix.ToUpper() );
+                suffixBytesBuffer.CopyFrom( suffixBytes, 0, 0, suffixBytes.Length );
+            }            
+
             var cryptTableBuffer = _hashCalculatorGpu.Accelerator.Allocate<uint>(HashCalculatorGpu.CryptTableSize);
 
-            var foundBuffer = _hashCalculatorGpu.Accelerator.Allocate<int>(1);
+            int nameCount = (int)Math.Pow( BruteForceBatches.Charset.Length, GpuBatchCharCount );
+
+            var foundNameCharsetIndexesBuffer = _hashCalculatorGpu.Accelerator.Allocate<int>(BruteForceBatches.MaxGeneratedChars);
 
 
+            // Main loop
 
             WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
             WriteObject( _hashCalculatorGpu.Accelerator );
 
             double billionCount = 0;
             double tempCount = 0;
-            double oneBatchBillionCount = (Math.Pow( BruteForceBatches.Charset.Length, GpuBatchCharCount) * GpuBatchSize ) / 1_000_000_000;
+            double oneBatchBillionCount = ( Math.Pow(BruteForceBatches.Charset.Length, GpuBatchCharCount) * GpuBatchSize ) / 1_000_000_000;
 
             while( _bruteForceBatches.NextBatch() )
             {
@@ -178,8 +190,8 @@ namespace MpqNameBreaker
                     _bruteForceBatches.BatchNameSeedCharsetIndexes, Index2.Zero, Index2.Zero, charsetIndexesBuffer.Extent );
 
                 // Call the kernel
-                kernel( charsetIndexesBuffer.Width, charsetBuffer.View, charsetIndexesBuffer.View, 0, cryptTableBuffer.View, 
-                    0, 0, 0, foundBuffer.View );
+                kernel( charsetIndexesBuffer.Width, charsetBuffer.View, cryptTableBuffer.View,
+                    charsetIndexesBuffer.View, suffixBytesBuffer.View, 0, 0, 0, nameCount, foundNameCharsetIndexesBuffer.View );
 
                 // Wait for the kernel to complete
                 _hashCalculatorGpu.Accelerator.Synchronize();
@@ -216,7 +228,6 @@ namespace MpqNameBreaker
                 }
                 
             }
-
 
         }
 

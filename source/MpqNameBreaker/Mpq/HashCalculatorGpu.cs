@@ -89,16 +89,15 @@ namespace MpqNameBreaker.Mpq
 
         public static void HashStringsBatchA(
             Index1 index,
-            ArrayView<byte> charset,
-            ArrayView2D<int> charsetIndexes,    // 2D array containing the char indexes of one batch string seed (one string per line, hashes will be computed starting from this string)
-            // ArrayView2D<int> charsetStopIndexes // 2D array containing the char indexes where the batch will stop
-            uint hashLookup,                    // The hash that we are looking for
-            ArrayView<uint> cryptTable,         // 1D array crypt table used for hash computation
-            int prefixLength,                   // String prefix length
-            uint seed1,                         // Pre-computed seed 1 for the string prefix
-            uint seed2,                         // Pre-computed seed 2 for the string prefix
-            ArrayView<int> found                // 1D array with one element (value is set to 1 if the hash is found in the batch)
-            // ? // Structure to hold the index in charsetIndexes when there's a hash match
+            ArrayView<byte> charset,                // 1D array holding the charset bytes
+            ArrayView<uint> cryptTable,             // 1D array crypt table used for hash computation
+            ArrayView2D<int> charsetIndexes,        // 2D array containing the char indexes of one batch string seed (one string per line, hashes will be computed starting from this string)
+            ArrayView<byte> suffixBytes,            // 1D array holding the indexes of the suffix chars
+            uint hashLookup,                        // The hash that we are looking for
+            uint seed1,                             // Pre-computed seed 1 for the string prefix
+            uint seed2,                             // Pre-computed seed 2 for the string prefix
+            int nameCount,                          // Name count limit (used as return condition)
+            ArrayView<int> foundNameCharsetIndexes  // 1D array containing the found name (if found)
         )
         {
             // Current char of the processed string
@@ -106,34 +105,43 @@ namespace MpqNameBreaker.Mpq
 
             // Hash type A
             int type = 0x100;
-/*
-            for( int i = prefixLength; i < charsetIndexes.Height; i++ )
+
+            while( nameCount != 0 )
             {
-                // Build 2D index for the strings 2D array
-                Index2 idx = new Index2( index.X, i );
+    /*
+                for( int i = prefixLength; i < charsetIndexes.Height; i++ )
+                {
+                    // Build 2D index for the strings 2D array
+                    Index2 idx = new Index2( index.X, i );
 
-                // Retrieve the current char of the string
-                ch = charset[ charsetIndexes[idx] ];
+                    // Retrieve the current char of the string
+                    ch = charset[ charsetIndexes[idx] ];
 
-                // Break if we reached the end of the string (\0)
-                if( ch == 0 )
-                    break;
-                
-                seed1 = cryptTable[type + ch] ^ (seed1 + seed2);
-                seed2 = ch + seed1 + seed2 + (seed2 << 5) + 3;
+                    // Break if we reached the end of the string (\0)
+                    if( ch == 0 )
+                        break;
+                    
+                    seed1 = cryptTable[type + ch] ^ (seed1 + seed2);
+                    seed2 = ch + seed1 + seed2 + (seed2 << 5) + 3;
+                }
+
+                // TODO: Process suffix
+
+                // Check if it matches the hash that we are looking for
+                if( seed1 == hashLookup )
+                {
+                    // TODO: Check hash B
+
+                    // if hash B matches then populatge foundNameCharsetIndexes and return
+
+                    // if hash B does not match display collision name
+                }
+    */
+
+                // TODO: Add code to move to next name
+
+                nameCount--;
             }
-
-            // Check if it matches the hash that we are looking for
-            if( seed1 == hashLookup )
-            {
-                found[0] = 1;
-            }
-
-
-            // TODO: Check if the last name of the seed is reached
-            // TODO: Add code to move to next name accordingly
-*/
-
         }
 
     }
