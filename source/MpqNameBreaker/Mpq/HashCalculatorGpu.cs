@@ -104,20 +104,21 @@ namespace MpqNameBreaker.Mpq
             // Current char of the processed string
             uint ch;
 
-            // Hash type A
-            int type = 0x100;
+            // Hash type
+            int typeA = 0x100;
+            int typeB = 0x200;
 
-            uint s1 = seed1;
-            uint s2 = seed2;
-
+            // For each name
             while( nameCount != 0 )
             {
+                uint s1 = seed1;
+                uint s2 = seed2;
 
                 for( int i = 0; i < charsetIndexes.Height; i++ )
                 {
                     // Build 2D index for the strings 2D array
                     Index2 idx = new Index2( index.X, i );
-                                        
+
                     // Retrieve the current char of the string
                     Index1 charsetIdx = charsetIndexes[new Index2( index.X, i )];
 
@@ -127,18 +128,18 @@ namespace MpqNameBreaker.Mpq
                     ch = charset[ charsetIdx ];
 
                     // Hash calculation                    
-                    s1 = cryptTable[type + ch] ^ (s1 + s2);
+                    s1 = cryptTable[typeA + ch] ^ (s1 + s2);
                     s2 = ch + s1 + s2 + (s2 << 5) + 3;
                 }
 
                 // TODO: Process suffix
 
                 // Check if it matches the hash that we are looking for
-                if( seed1 == hashALookup )
+                if( s1 == hashALookup )
                 {
                     // TODO: Check hash B
 
-                    // if hash B matches then populatge foundNameCharsetIndexes and return
+                    // if hash B matches then populate foundNameCharsetIndexes and return
 
                     // if hash B does not match display collision name
                 }
