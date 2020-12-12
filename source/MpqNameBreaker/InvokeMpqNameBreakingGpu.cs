@@ -150,21 +150,40 @@ namespace MpqNameBreaker
                 >( Mpq.HashCalculatorGpu.HashStringsBatchA );
 
             // Prepare data
-            
+            var charsetBuffer = _hashCalculatorGpu.Accelerator.Allocate<byte>( _bruteForceBatches.CharsetBytes.Length );
+            charsetBuffer.CopyFrom( _bruteForceBatches.CharsetBytes, 0, 0, _bruteForceBatches.CharsetBytes.Length );
 
+            var charsetIndexesBuffer = _hashCalculatorGpu.Accelerator.Allocate<int>( GpuBatchSize, BruteForceBatches.MaxGeneratedChars );
+
+            var cryptTableBuffer = _hashCalculatorGpu.Accelerator.Allocate<uint>(HashCalculatorGpu.CryptTableSize);
+
+            var foundBuffer = _hashCalculatorGpu.Accelerator.Allocate<int>(1);
 
 
 
             WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
             WriteObject( _hashCalculatorGpu.Accelerator );
 
-            long count = 0;
-            long billionCount = 0;
-            long oneBatchCount = (BruteForceBatches.Charset.Length^GpuBatchCharCount)*GpuBatchSize;
+            double billionCount = 0;
+            double tempCount = 0;
+            double oneBatchBillionCount = (Math.Pow( BruteForceBatches.Charset.Length, GpuBatchCharCount) * GpuBatchSize ) / 1_000_000_000;
+
             while( _bruteForceBatches.NextBatch() )
             {
                 // Debug
                 //string[] names = _bruteForceBatches.BatchNames;
+
+                // Copy char indexes to buffer
+                charsetIndexesBuffer.CopyFrom( 
+                    _bruteForceBatches.BatchNameSeedCharsetIndexes, Index2.Zero, Index2.Zero, charsetIndexesBuffer.Extent );
+
+                // Call the kernel
+                kernel( charsetIndexesBuffer.Width, charsetBuffer.View, charsetIndexesBuffer.View, 0, cryptTableBuffer.View, 
+                    0, 0, 0, foundBuffer.View );
+
+                // Wait for the kernel to complete
+                _hashCalculatorGpu.Accelerator.Synchronize();
+
 
                 /*
                 currentHashA = _hashCalculator.HashStringOptimized( _bruteForce.NameBytes, HashType.MpqHashNameA, _bruteForce.Prefix.Length, prefixSeed1A, prefixSeed2A );
@@ -185,17 +204,17 @@ namespace MpqNameBreaker
                         WriteWarning( "Hash A collision found on name: " + _bruteForce.Name );
                     }
                 }
-    
                 */
 
-                count += oneBatchCount;
-                if( billionCount < (count / 1_000_000_000) )
+                
+                billionCount += oneBatchBillionCount;
+                if( tempCount < billionCount )
                 {
-                    billionCount = count / 1_000_000_000;
+                    tempCount = billionCount + 100_000;
                     TimeSpan elapsed = DateTime.Now - start;
-                    WriteVerbose( String.Format("Time: {0} - Count : {1:N0}", elapsed.ToString(), count) );
+                    WriteVerbose( String.Format("Time: {0} - Count : {1:N0} billion", elapsed.ToString(), billionCount) );
                 }
-
+                
             }
 
 

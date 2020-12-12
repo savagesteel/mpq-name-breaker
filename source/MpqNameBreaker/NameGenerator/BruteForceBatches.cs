@@ -10,6 +10,9 @@ namespace MpqNameBreaker.NameGenerator
         public const string Charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-";
         // ".\\()"
 
+        public byte[] CharsetBytes { get; private set; }
+
+
         // Properties
 
         // The number of name seeds that will be generated
@@ -40,7 +43,7 @@ namespace MpqNameBreaker.NameGenerator
                         if( idx == -1 )
                             break;
 
-                        res[i] += Convert.ToChar( _charsetBytes[ idx ] );
+                        res[i] += Convert.ToChar( CharsetBytes[ idx ] );
                     }
                 }
                 return res;
@@ -50,7 +53,6 @@ namespace MpqNameBreaker.NameGenerator
         public bool Initialized { get; private set; }
 
         // Fields
-        private byte[] _charsetBytes;
 
         private int _generatedCharIndex;
         private int[] _nameCharsetIndexes;
@@ -61,7 +63,7 @@ namespace MpqNameBreaker.NameGenerator
         public BruteForceBatches()
         {
             Initialized = false;
-            _charsetBytes = Encoding.ASCII.GetBytes( Charset.ToUpper() );
+            CharsetBytes = Encoding.ASCII.GetBytes( Charset.ToUpper() );
             _generatedCharIndex = 0;
         }
 
@@ -93,7 +95,7 @@ namespace MpqNameBreaker.NameGenerator
                 return false;
 
             // If we are AT the last char of the charset
-            if( _nameCharsetIndexes[_generatedCharIndex] == _charsetBytes.Length-1 )
+            if( _nameCharsetIndexes[_generatedCharIndex] == CharsetBytes.Length-1 )
             {
                 bool increaseNameSize = false;
 
@@ -101,7 +103,7 @@ namespace MpqNameBreaker.NameGenerator
                 for( int i = _generatedCharIndex; i >= 0; --i )
                 {
                     // If we are at the last char of the charset then go back to the first char
-                    if( _nameCharsetIndexes[i] == _charsetBytes.Length-1 )
+                    if( _nameCharsetIndexes[i] == CharsetBytes.Length-1 )
                     {
                         _nameCharsetIndexes[i] = 0;
                         

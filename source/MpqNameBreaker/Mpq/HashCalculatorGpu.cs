@@ -9,10 +9,10 @@ namespace MpqNameBreaker.Mpq
     {
 
                 // Constants
-        const uint CryptTableSize = 0x500;
-        const uint CryptTableSeed = 0x00100001;
-        const uint HashSeed1 = 0x7FED7FED;
-        const uint HashSeed2 = 0xEEEEEEEE;
+        public const uint CryptTableSize = 0x500;
+        public const uint CryptTableSeed = 0x00100001;
+        public const uint HashSeed1 = 0x7FED7FED;
+        public const uint HashSeed2 = 0xEEEEEEEE;
 
         // Properties
         public uint[] CryptTable {get; private set;}
