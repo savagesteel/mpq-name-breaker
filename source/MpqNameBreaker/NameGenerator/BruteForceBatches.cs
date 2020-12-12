@@ -6,8 +6,8 @@ namespace MpqNameBreaker.NameGenerator
     public class BruteForceBatches
     {
         // Constants
-        const int MaxGeneratedChars = 16;
-        const string Charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-";
+        public const int MaxGeneratedChars = 16;
+        public const string Charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-";
         // ".\\()"
 
         // Properties

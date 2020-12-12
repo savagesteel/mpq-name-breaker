@@ -42,6 +42,19 @@ namespace MpqNameBreaker
         [AllowEmptyString()]
         public string Suffix { get; set; }
 
+        [Parameter(
+            Mandatory = true,
+            Position = 1,
+            ValueFromPipelineByPropertyName = true)]
+        public int GpuBatchSize { get; set; }
+
+        [Parameter(
+            Mandatory = true,
+            Position = 1,
+            ValueFromPipelineByPropertyName = true)]
+        public int GpuBatchCharCount { get; set; }
+
+
         // Fields
         private BruteForce _bruteForce;
         private BruteForceBatches _bruteForceBatches;
@@ -117,7 +130,7 @@ namespace MpqNameBreaker
             (prefixSeed1B, prefixSeed2B) = _hashCalculator.HashStringOptimizedCalculateSeeds( _bruteForce.PrefixBytes, HashType.MpqHashNameB );
 
             // Initialize brute force batches name generator
-            _bruteForceBatches = new BruteForceBatches( 1024, 5 ); // Batch size 1024 name seeds
+            _bruteForceBatches = new BruteForceBatches( GpuBatchSize, GpuBatchCharCount ); // Batch size 1024 name seeds
             _bruteForceBatches.Initialize();
 
             // Initialize GPU hash calculator
@@ -126,16 +139,15 @@ namespace MpqNameBreaker
 
 
             WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
-
             WriteObject( _hashCalculatorGpu.Accelerator );
 
-
             long count = 0;
+            long billionCount = 0;
+            long oneBatchCount = (BruteForceBatches.Charset.Length^GpuBatchCharCount)*GpuBatchSize;
             while( _bruteForceBatches.NextBatch() )
             {
-                string[] names = _bruteForceBatches.BatchNames;
-
-
+                // Debug
+                //string[] names = _bruteForceBatches.BatchNames;
 
                 /*
                 currentHashA = _hashCalculator.HashStringOptimized( _bruteForce.NameBytes, HashType.MpqHashNameA, _bruteForce.Prefix.Length, prefixSeed1A, prefixSeed2A );
@@ -158,13 +170,14 @@ namespace MpqNameBreaker
                 }
     
                 */
-                if( count % 1_000_000_000 == 0 )
+
+                count += oneBatchCount;
+                if( billionCount < (count / 1_000_000_000) )
                 {
+                    billionCount = count / 1_000_000_000;
                     TimeSpan elapsed = DateTime.Now - start;
-                    WriteVerbose( String.Format("Time: {0} - Name: {1} - Count : {2:N0} billion", elapsed.ToString(), _bruteForce.Name, count/1_000_000_000) );
+                    WriteVerbose( String.Format("Time: {0} - Count : {1:N0}", elapsed.ToString(), count) );
                 }
-    
-                count++;
 
             }
 
