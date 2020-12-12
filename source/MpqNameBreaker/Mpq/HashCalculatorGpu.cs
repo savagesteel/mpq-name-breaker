@@ -64,7 +64,7 @@ namespace MpqNameBreaker.Mpq
             foreach( var acceleratorId in Accelerator.Accelerators )
             {
                 // Instanciate the Nvidia (CUDA) accelerator
-                if( acceleratorId.AcceleratorType == AcceleratorType.Cuda )
+                if( acceleratorId.AcceleratorType == AcceleratorType.CPU )
                 {
                     Accelerator = Accelerator.Create( context, acceleratorId );
                 }
@@ -123,7 +123,7 @@ namespace MpqNameBreaker.Mpq
                     Index1 charsetIdx = charsetIndexes[new Index2( index.X, i )];
 
                     if( charsetIdx == -1 ) // break if end of the string is reached
-                        break;
+                        break; 
 
                     ch = charset[ charsetIdx ];
 
@@ -137,6 +137,7 @@ namespace MpqNameBreaker.Mpq
                 // Check if it matches the hash that we are looking for
                 if( s1 == hashALookup )
                 {
+                    bool found = true;
                     // TODO: Check hash B
 
                     // if hash B matches then populate foundNameCharsetIndexes and return

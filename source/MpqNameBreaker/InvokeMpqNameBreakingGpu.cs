@@ -166,6 +166,7 @@ namespace MpqNameBreaker
             }            
 
             var cryptTableBuffer = _hashCalculatorGpu.Accelerator.Allocate<uint>(HashCalculatorGpu.CryptTableSize);
+            cryptTableBuffer.CopyFrom( _hashCalculatorGpu.CryptTable, 0, 0, _hashCalculatorGpu.CryptTable.Length );
 
             int nameCount = (int)Math.Pow( BruteForceBatches.Charset.Length, GpuBatchCharCount );
 
@@ -189,6 +190,30 @@ namespace MpqNameBreaker
                 // Copy char indexes to buffer
                 charsetIndexesBuffer.CopyFrom( 
                     _bruteForceBatches.BatchNameSeedCharsetIndexes, Index2.Zero, Index2.Zero, charsetIndexesBuffer.Extent );
+
+                // DEBUG: Inject a known name data in charsetIndexesBuffer to test the kernel
+                string testName = "AXE.CEL";
+                byte[] testNameBytes = Encoding.ASCII.GetBytes( testName.ToUpper() );
+                int[,] testNameIndexes = new int[1024,16];
+                int cIndex = 0;
+                for( int i = 0; i < 1024; i++ )
+                {
+                    for( int j = 0; j < 16; j++)
+                    {
+                        if( j < testName.Length )
+                            cIndex = BruteForceBatches.Charset.IndexOf(testName[j]);
+                        else
+                            cIndex = -1;
+
+                        testNameIndexes[i,j] = cIndex;
+                    }
+                }
+                charsetIndexesBuffer.CopyFrom( 
+                    testNameIndexes, Index2.Zero, Index2.Zero, charsetIndexesBuffer.Extent );
+                var test = charsetIndexesBuffer.GetAs2DArray();
+
+                var hash = _hashCalculator.HashString(Encoding.ASCII.GetBytes("ITEMS2\\AXE.CEL"),HashType.MpqHashNameA);
+                var hasho = _hashCalculator.HashStringOptimized(Encoding.ASCII.GetBytes("ITEMS2\\AXE.CEL"),HashType.MpqHashNameA,7,prefixSeed1A,prefixSeed2A);
 
                 // Call the kernel
                 kernel( charsetIndexesBuffer.Width, charsetBuffer.View, cryptTableBuffer.View,

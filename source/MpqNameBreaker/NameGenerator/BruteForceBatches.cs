@@ -7,7 +7,7 @@ namespace MpqNameBreaker.NameGenerator
     {
         // Constants
         public const int MaxGeneratedChars = 16;
-        public const string Charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-";
+        public const string Charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-.";
         // ".\\()"
 
         public byte[] CharsetBytes { get; private set; }
