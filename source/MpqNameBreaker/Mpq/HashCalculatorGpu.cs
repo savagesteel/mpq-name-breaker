@@ -118,9 +118,6 @@ namespace MpqNameBreaker.Mpq
 
                 for( int i = 0; i < charsetIndexes.Height; i++ )
                 {
-                    // Build 2D index for the strings 2D array
-                    Index2 idx = new Index2( index.X, i );
-
                     // Retrieve the current char of the string
                     Index1 charsetIdx = charsetIndexes[new Index2( index.X, i )];
 
@@ -144,9 +141,6 @@ namespace MpqNameBreaker.Mpq
 
                     for( int i = 0; i < charsetIndexes.Height; i++ )
                     {
-                        // Build 2D index for the strings 2D array
-                        Index2 idx = new Index2( index.X, i );
-
                         // Retrieve the current char of the string
                         Index1 charsetIdx = charsetIndexes[new Index2( index.X, i )];
 
@@ -163,6 +157,9 @@ namespace MpqNameBreaker.Mpq
                     if( s1 == hashBLookup )
                     {
                         // Populate foundNameCharsetIndexes and return
+                        for( int i = 0; i < charsetIndexes.Height; i++ )
+                            foundNameCharsetIndexes[i] = charsetIndexes[new Index2( index.X, i )];
+
                         return;
                     }
 

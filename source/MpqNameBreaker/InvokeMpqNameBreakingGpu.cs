@@ -172,7 +172,13 @@ namespace MpqNameBreaker
 
             int nameCount = (int)Math.Pow( BruteForceBatches.Charset.Length, GpuBatchCharCount );
 
+            // fill result array with -1
             var foundNameCharsetIndexesBuffer = _hashCalculatorGpu.Accelerator.Allocate<int>(BruteForceBatches.MaxGeneratedChars);
+            int[] foundNameCharsetIndexes = new int[BruteForceBatches.MaxGeneratedChars]; 
+            for( int i = 0; i < BruteForceBatches.MaxGeneratedChars; ++i )
+                foundNameCharsetIndexes[i] = -1;
+            foundNameCharsetIndexesBuffer.CopyFrom( foundNameCharsetIndexes, 0, 0, foundNameCharsetIndexesBuffer.Extent );
+            string foundName = "";
 
 
             // Main loop
@@ -194,6 +200,7 @@ namespace MpqNameBreaker
                     _bruteForceBatches.BatchNameSeedCharsetIndexes, Index2.Zero, Index2.Zero, charsetIndexesBuffer.Extent );
 
                 // DEBUG: Inject a known name data in charsetIndexesBuffer to test the kernel
+                
                 string testName = "AXE.CEL";
                 byte[] testNameBytes = Encoding.ASCII.GetBytes( testName.ToUpper() );
                 int[,] testNameIndexes = new int[1024,16];
@@ -216,7 +223,8 @@ namespace MpqNameBreaker
 
                 var hash = _hashCalculator.HashString(Encoding.ASCII.GetBytes("ITEMS2\\AXE.CEL"),HashType.MpqHashNameA);
                 var hasho = _hashCalculator.HashStringOptimized(Encoding.ASCII.GetBytes("ITEMS2\\AXE.CEL"),HashType.MpqHashNameA,7,prefixSeed1A,prefixSeed2A);
-
+                
+                
                 // Call the kernel
                 kernel( charsetIndexesBuffer.Width, charsetBuffer.View, cryptTableBuffer.View,
                     charsetIndexesBuffer.View, suffixBytesBuffer.View, HashA, HashB, prefixSeed1A, prefixSeed2A, prefixSeed1B, prefixSeed2B,
@@ -225,6 +233,28 @@ namespace MpqNameBreaker
                 // Wait for the kernel to complete
                 _hashCalculatorGpu.Accelerator.Synchronize();
 
+                // If name was found
+                foundNameCharsetIndexes = foundNameCharsetIndexesBuffer.GetAsArray();
+
+                if( foundNameCharsetIndexes[0] != -1 )
+                {
+                    byte[] str = new byte[BruteForceBatches.MaxGeneratedChars];
+
+                    for( int i = 0; i < BruteForceBatches.MaxGeneratedChars; ++i )
+                    {
+                        int idx = foundNameCharsetIndexes[i];
+                        
+                        if( idx == -1 )
+                            break;
+
+                        foundName += Convert.ToChar( _bruteForceBatches.CharsetBytes[ idx ] );
+                    }
+
+                    WriteObject( "Name found: " + foundName );
+                    return;
+
+                }
+                
 
                 /*
                 currentHashA = _hashCalculator.HashStringOptimized( _bruteForce.NameBytes, HashType.MpqHashNameA, _bruteForce.Prefix.Length, prefixSeed1A, prefixSeed2A );
