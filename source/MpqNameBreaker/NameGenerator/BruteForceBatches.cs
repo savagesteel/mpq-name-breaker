@@ -7,9 +7,10 @@ namespace MpqNameBreaker.NameGenerator
     {
         // Constants
         public const int MaxGeneratedChars = 16;
-        public const string Charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-.()";
+        //public const string Charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-.()\\";
         // ".\\()"
 
+        public string Charset { get; private set; }
         public byte[] CharsetBytes { get; private set; }
 
 
@@ -65,6 +66,7 @@ namespace MpqNameBreaker.NameGenerator
         public BruteForceBatches()
         {
             Initialized = false;
+            Charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-";
             CharsetBytes = Encoding.ASCII.GetBytes( Charset.ToUpper() );
             FirstBatch = true;
             BatchNumber = 0;
@@ -77,6 +79,12 @@ namespace MpqNameBreaker.NameGenerator
             this.BatchItemCharCount = charCount;
 
             BatchNameSeedCharsetIndexes = new int[ size, MaxGeneratedChars ];
+        }
+
+        public BruteForceBatches( int size, int charCount, string additionalChars ) : this( size, charCount )
+        {
+            Charset += additionalChars;
+            CharsetBytes = Encoding.ASCII.GetBytes( Charset.ToUpper() );
         }
 
         // Methods

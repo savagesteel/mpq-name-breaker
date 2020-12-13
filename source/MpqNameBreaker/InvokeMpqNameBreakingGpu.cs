@@ -44,6 +44,13 @@ namespace MpqNameBreaker
 
         [Parameter(
             Mandatory = true,
+            Position = 3,
+            ValueFromPipelineByPropertyName = true)]
+        [AllowEmptyString()]
+        public string AdditionalChars { get; set; }
+
+        [Parameter(
+            Mandatory = true,
             Position = 1,
             ValueFromPipelineByPropertyName = true)]
         public int GpuBatchSize { get; set; }
@@ -70,7 +77,6 @@ namespace MpqNameBreaker
         protected override void ProcessRecord()
         {
             uint prefixSeed1A, prefixSeed2A, prefixSeed1B, prefixSeed2B;
-            DateTime start = DateTime.Now;
 
             // Initialize brute force name generator
             _bruteForce = new BruteForce( Prefix, Suffix );
@@ -92,8 +98,14 @@ namespace MpqNameBreaker
             }
 
             // Initialize brute force batches name generator
-            _bruteForceBatches = new BruteForceBatches( GpuBatchSize, GpuBatchCharCount ); // Batch size 1024 name seeds
+            if( AdditionalChars.Length > 0 )
+                _bruteForceBatches = new BruteForceBatches( GpuBatchSize, GpuBatchCharCount, AdditionalChars );
+            else
+                _bruteForceBatches = new BruteForceBatches( GpuBatchSize, GpuBatchCharCount );
+
             _bruteForceBatches.Initialize();
+
+
 
             // Initialize GPU hash calculator
             _hashCalculatorGpu = new HashCalculatorGpu();
@@ -151,7 +163,7 @@ namespace MpqNameBreaker
             var cryptTableBuffer = _hashCalculatorGpu.Accelerator.Allocate<uint>(HashCalculatorGpu.CryptTableSize);
             cryptTableBuffer.CopyFrom( _hashCalculatorGpu.CryptTable, 0, 0, _hashCalculatorGpu.CryptTable.Length );
 
-            int nameCount = (int)Math.Pow( BruteForceBatches.Charset.Length, GpuBatchCharCount );
+            int nameCount = (int)Math.Pow( _bruteForceBatches.Charset.Length, GpuBatchCharCount );
 
             // fill result array with -1
             var foundNameCharsetIndexesBuffer = _hashCalculatorGpu.Accelerator.Allocate<int>(BruteForceBatches.MaxGeneratedChars);
@@ -168,8 +180,9 @@ namespace MpqNameBreaker
 
             double billionCount = 0;
             double tempCount = 0;
-            double oneBatchBillionCount = ( Math.Pow(BruteForceBatches.Charset.Length, GpuBatchCharCount) * GpuBatchSize ) / 1_000_000_000;
+            double oneBatchBillionCount = ( Math.Pow(_bruteForceBatches.Charset.Length, GpuBatchCharCount) * GpuBatchSize ) / 1_000_000_000;
 
+            DateTime start = DateTime.Now;
             while( _bruteForceBatches.NextBatch() )
             {
                 // Debug
@@ -259,7 +272,7 @@ namespace MpqNameBreaker
                     }
 
 
-                    WriteVerbose( String.Format("Time: {0} - Name {1} - Count : {2:N0} billion", elapsed.ToString(), Prefix+lastName+Suffix, billionCount) );
+                    WriteVerbose( String.Format("Time: {0} - Name {1} - Count : {2:N0} billion", elapsed.ToString(), Prefix.ToUpper()+lastName+Suffix.ToUpper(), billionCount) );
                 }
                 
             }
