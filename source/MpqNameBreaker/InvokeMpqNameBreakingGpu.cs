@@ -29,37 +29,37 @@ namespace MpqNameBreaker
         public uint HashB { get; set; }
 
         [Parameter(
-            Mandatory = true,
+            Mandatory = false,
             Position = 2,
             ValueFromPipelineByPropertyName = true)]
         [AllowEmptyString()]
-        public string Prefix { get; set; }
+        public string Prefix { get; set; } = "";
 
         [Parameter(
-            Mandatory = true,
+            Mandatory = false,
             Position = 3,
             ValueFromPipelineByPropertyName = true)]
         [AllowEmptyString()]
-        public string Suffix { get; set; }
+        public string Suffix { get; set; } = "";
 
         [Parameter(
-            Mandatory = true,
+            Mandatory = false,
             Position = 3,
             ValueFromPipelineByPropertyName = true)]
         [AllowEmptyString()]
-        public string AdditionalChars { get; set; }
+        public string AdditionalChars { get; set; } = "";
 
         [Parameter(
-            Mandatory = true,
+            Mandatory = false,
             Position = 1,
             ValueFromPipelineByPropertyName = true)]
-        public int GpuBatchSize { get; set; }
+        public int GpuBatchSize { get; set; } = 100_000;
 
         [Parameter(
-            Mandatory = true,
+            Mandatory = false,
             Position = 1,
             ValueFromPipelineByPropertyName = true)]
-        public int GpuBatchCharCount { get; set; }
+        public int GpuBatchCharCount { get; set; } = 3;
 
 
         // Fields

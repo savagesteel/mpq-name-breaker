@@ -19,7 +19,7 @@ It relies on the [ILGPU 0.9.2]() library
 
 ## Usage
 
-The default charset used for the namebreaking is `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-`.  
+The default charset used for the namebreaking is `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-`  
 It can be extended with the `-AdditionalChars` parameter.
 
 ```powershell
@@ -27,7 +27,7 @@ It can be extended with the `-AdditionalChars` parameter.
 Invoke-MpqNameBreaking -HashA 0xD50A0BCCu -HashB 0xB94F2DD2u -Prefix 'gendata\' -Suffix '.pal' -Verbose
 
 # Name breaking for "levels2\l1data\hero1.dun" (GPU accelerated)
-Invoke-MpqNameBreakingGpu -HashA 0xFA1E3FAAu -HashB 0x45E2A9B7u -Prefix 'LEVELS\L1DATA\' -Suffix '.DUN' -AdditionalChars '' -GpuBatchSize 100000 -GpuBatchCharCount 3 -Verbose
+Invoke-MpqNameBreakingGpu -HashA 0xFA1E3FAAu -HashB 0x45E2A9B7u -Prefix 'LEVELS2\L1DATA\' -Suffix '.DUN' -Verbose
 ```
 
 ## Build
