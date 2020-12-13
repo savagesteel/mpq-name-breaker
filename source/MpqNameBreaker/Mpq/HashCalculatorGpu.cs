@@ -95,8 +95,10 @@ namespace MpqNameBreaker.Mpq
             ArrayView<byte> suffixBytes,            // 1D array holding the indexes of the suffix chars
             uint hashALookup,                       // The hash A that we are looking for
             uint hashBLookup,                       // The hash B that we are looking for
-            uint seed1,                             // Pre-computed seed 1 for the string prefix
-            uint seed2,                             // Pre-computed seed 2 for the string prefix
+            uint seed1a,                             // Pre-computed hash A seed 1 for the string prefix
+            uint seed2a,                             // Pre-computed hash A seed 2 for the string prefix
+            uint seed1b,                             // Pre-computed hash B seed 1 for the string prefix
+            uint seed2b,                             // Pre-computed hash B seed 2 for the string prefix
             int nameCount,                          // Name count limit (used as return condition)
             ArrayView<int> foundNameCharsetIndexes  // 1D array containing the found name (if found)
         )
@@ -111,8 +113,8 @@ namespace MpqNameBreaker.Mpq
             // For each name
             while( nameCount != 0 )
             {
-                uint s1 = seed1;
-                uint s2 = seed2;
+                uint s1 = seed1a;
+                uint s2 = seed2a;
 
                 for( int i = 0; i < charsetIndexes.Height; i++ )
                 {
@@ -137,12 +139,33 @@ namespace MpqNameBreaker.Mpq
                 // Check if it matches the hash that we are looking for
                 if( s1 == hashALookup )
                 {
-                    bool found = true;
-                    // TODO: Check hash B
+                    s1 = seed1b;
+                    s2 = seed2b;
 
-                    // if hash B matches then populate foundNameCharsetIndexes and return
+                    for( int i = 0; i < charsetIndexes.Height; i++ )
+                    {
+                        // Build 2D index for the strings 2D array
+                        Index2 idx = new Index2( index.X, i );
 
-                    // if hash B does not match display collision name
+                        // Retrieve the current char of the string
+                        Index1 charsetIdx = charsetIndexes[new Index2( index.X, i )];
+
+                        if( charsetIdx == -1 ) // break if end of the string is reached
+                            break; 
+
+                        ch = charset[ charsetIdx ];
+
+                        // Hash calculation                    
+                        s1 = cryptTable[typeB + ch] ^ (s1 + s2);
+                        s2 = ch + s1 + s2 + (s2 << 5) + 3;
+                    }
+
+                    if( s1 == hashBLookup )
+                    {
+                        // Populate foundNameCharsetIndexes and return
+                        return;
+                    }
+
                 }
 
 

@@ -148,6 +148,8 @@ namespace MpqNameBreaker
                     uint,
                     uint,
                     uint,
+                    uint,
+                    uint,
                     int,
                     ArrayView<int>
                 >( Mpq.HashCalculatorGpu.HashStringsBatchA );
@@ -217,7 +219,7 @@ namespace MpqNameBreaker
 
                 // Call the kernel
                 kernel( charsetIndexesBuffer.Width, charsetBuffer.View, cryptTableBuffer.View,
-                    charsetIndexesBuffer.View, suffixBytesBuffer.View, HashA, HashB, prefixSeed1A, prefixSeed2A,
+                    charsetIndexesBuffer.View, suffixBytesBuffer.View, HashA, HashB, prefixSeed1A, prefixSeed2A, prefixSeed1B, prefixSeed2B,
                     nameCount, foundNameCharsetIndexesBuffer.View );
 
                 // Wait for the kernel to complete
