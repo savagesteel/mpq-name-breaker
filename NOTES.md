@@ -21,8 +21,7 @@ The file is a dungeon map so the extension is likely `.dun`
 Invoke-MpqNameBreaking -HashA 0xB29FC135u -HashB 0x22575C4Au -Prefix 'LEVELS\L1DATA\' -Suffix '.DUN' -Verbose
 
 # GPU
-Invoke-MpqNameBreakingGpu -HashA 0xB29FC135u -HashB 0x22575C4Au -Prefix 'levels\l1data\' -Suffix '.dun' -AdditionalChars " " -GpuBatchSize 100KB -GpuBatchCharCount 3 -Verbose
-
+Invoke-MpqNameBreakingGpu -HashA 0xB29FC135u -HashB 0x22575C4Au -Prefix 'levels\l1data\' -Suffix '.dun' -AdditionalChars " " -GpuBatchSize 100000 -GpuBatchCharCount 3 -Verbose
 ```
 
 ### Already checked
