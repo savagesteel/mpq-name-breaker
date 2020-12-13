@@ -185,7 +185,7 @@ namespace MpqNameBreaker
             // MAIN
 
             WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
-            WriteObject( _hashCalculatorGpu.Accelerator );
+            WriteObject( "Accelerator : " + _hashCalculatorGpu.Accelerator.Name );
 
             double billionCount = 0;
             double tempCount = 0;
