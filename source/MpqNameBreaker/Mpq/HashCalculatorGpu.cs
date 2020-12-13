@@ -113,6 +113,9 @@ namespace MpqNameBreaker.Mpq
             int typeA = 0x100; // Hash type A
             int typeB = 0x200; // Hash type B
 
+            bool suffix = true;
+            if( suffixBytes[0] == 0 )
+                suffix = false;
 
             // Brute force increment preparation
             // Increase name count to !numChars-1 for first batch first name seed
@@ -170,7 +173,19 @@ namespace MpqNameBreaker.Mpq
                     s2 = ch + s1 + s2 + (s2 << 5) + 3;
                 }
 
-                // TODO: Process suffix
+                // Process suffix
+                if( suffix )
+                {
+                    for( int i = 0; i < suffixBytes.Length; i++ )
+                    {
+                        // Retrieve current suffix char
+                        ch = suffixBytes[i];
+
+                        // Hash calculation                    
+                        s1 = cryptTable[typeA + ch] ^ (s1 + s2);
+                        s2 = ch + s1 + s2 + (s2 << 5) + 3;
+                    }
+                }
 
                 // Check if it matches the hash that we are looking for
                 if( s1 == hashALookup )
@@ -191,6 +206,20 @@ namespace MpqNameBreaker.Mpq
                         // Hash calculation                    
                         s1 = cryptTable[typeB + ch] ^ (s1 + s2);
                         s2 = ch + s1 + s2 + (s2 << 5) + 3;
+                    }
+
+                    // Process suffix
+                    if( suffix )
+                    {
+                        for( int i = 0; i < suffixBytes.Length; i++ )
+                        {
+                            // Retrieve current suffix char
+                            ch = suffixBytes[i];
+
+                            // Hash calculation                    
+                            s1 = cryptTable[typeB + ch] ^ (s1 + s2);
+                            s2 = ch + s1 + s2 + (s2 << 5) + 3;
+                        }
                     }
 
                     if( s1 == hashBLookup )

@@ -69,7 +69,7 @@ namespace MpqNameBreaker
         // This method will be called for each input received from the pipeline to this cmdlet; if no input is received, this method is not called
         protected override void ProcessRecord()
         {
-            uint prefixSeed1A, prefixSeed2A, prefixSeed1B, prefixSeed2B, currentHashA, currentHashB;
+            uint prefixSeed1A, prefixSeed2A, prefixSeed1B, prefixSeed2B;
             DateTime start = DateTime.Now;
 
             // Initialize brute force name generator
@@ -78,8 +78,18 @@ namespace MpqNameBreaker
 
             // Initialize classic CPU hash calculator and pre-calculate prefix seeds
             _hashCalculator = new HashCalculator();
-            (prefixSeed1A, prefixSeed2A) = _hashCalculator.HashStringOptimizedCalculateSeeds( _bruteForce.PrefixBytes, HashType.MpqHashNameA );
-            (prefixSeed1B, prefixSeed2B) = _hashCalculator.HashStringOptimizedCalculateSeeds( _bruteForce.PrefixBytes, HashType.MpqHashNameB );
+            if( Prefix.Length > 0 )
+            {
+                (prefixSeed1A, prefixSeed2A) = _hashCalculator.HashStringOptimizedCalculateSeeds( _bruteForce.PrefixBytes, HashType.MpqHashNameA );
+                (prefixSeed1B, prefixSeed2B) = _hashCalculator.HashStringOptimizedCalculateSeeds( _bruteForce.PrefixBytes, HashType.MpqHashNameB );
+            }
+            else
+            {
+                prefixSeed1A = HashCalculatorGpu.HashSeed1;
+                prefixSeed2A = HashCalculatorGpu.HashSeed2;
+                prefixSeed1B = HashCalculatorGpu.HashSeed1;
+                prefixSeed2B = HashCalculatorGpu.HashSeed2;
+            }
 
             // Initialize brute force batches name generator
             _bruteForceBatches = new BruteForceBatches( GpuBatchSize, GpuBatchCharCount ); // Batch size 1024 name seeds
@@ -114,12 +124,29 @@ namespace MpqNameBreaker
 
             var charsetIndexesBuffer = _hashCalculatorGpu.Accelerator.Allocate<int>( GpuBatchSize, BruteForceBatches.MaxGeneratedChars );
 
-            var suffixBytesBuffer = _hashCalculatorGpu.Accelerator.Allocate<byte>( Suffix.Length );
+            // Suffix processing
+            bool suffix;
+            int suffixLength;
+            byte[] suffixBytes;
             if( Suffix.Length > 0 )
             {
-                byte[] suffixBytes = Encoding.ASCII.GetBytes( Suffix.ToUpper() );
+                suffix = true;
+                suffixLength = Suffix.Length;
+                suffixBytes = Encoding.ASCII.GetBytes( Suffix.ToUpper() );
+            }
+            else
+            {
+                suffix = false;
+                suffixLength = 1;
+                suffixBytes = new byte[1];
+                suffixBytes[0] = 0;
+            }
+            var suffixBytesBuffer = _hashCalculatorGpu.Accelerator.Allocate<byte>( suffixLength );
+            if( suffix )
+            {
                 suffixBytesBuffer.CopyFrom( suffixBytes, 0, 0, suffixBytes.Length );
-            }            
+            }
+
 
             var cryptTableBuffer = _hashCalculatorGpu.Accelerator.Allocate<uint>(HashCalculatorGpu.CryptTableSize);
             cryptTableBuffer.CopyFrom( _hashCalculatorGpu.CryptTable, 0, 0, _hashCalculatorGpu.CryptTable.Length );
@@ -208,7 +235,7 @@ namespace MpqNameBreaker
                         foundName += Convert.ToChar( _bruteForceBatches.CharsetBytes[ idx ] );
                     }
 
-                    WriteObject( "Name found: " + foundName );
+                    WriteObject( "Name found: " + Prefix.ToUpper() + foundName + Suffix.ToUpper() );
                     return;
 
                 }
