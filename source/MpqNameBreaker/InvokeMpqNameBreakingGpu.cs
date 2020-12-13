@@ -193,7 +193,7 @@ namespace MpqNameBreaker
             while( _bruteForceBatches.NextBatch() )
             {
                 // Debug
-                string[] names = _bruteForceBatches.BatchNames;
+                //string[] names = _bruteForceBatches.BatchNames;
 
                 // Copy char indexes to buffer
                 charsetIndexesBuffer.CopyFrom( 
@@ -201,6 +201,7 @@ namespace MpqNameBreaker
 
                 // DEBUG: Inject a known name data in charsetIndexesBuffer to test the kernel
                 
+                /*
                 string testName = "AXE.CEL";
                 byte[] testNameBytes = Encoding.ASCII.GetBytes( testName.ToUpper() );
                 int[,] testNameIndexes = new int[1024,16];
@@ -223,7 +224,7 @@ namespace MpqNameBreaker
 
                 var hash = _hashCalculator.HashString(Encoding.ASCII.GetBytes("ITEMS2\\AXE.CEL"),HashType.MpqHashNameA);
                 var hasho = _hashCalculator.HashStringOptimized(Encoding.ASCII.GetBytes("ITEMS2\\AXE.CEL"),HashType.MpqHashNameA,7,prefixSeed1A,prefixSeed2A);
-                
+                */
                 
                 // Call the kernel
                 kernel( charsetIndexesBuffer.Width, charsetBuffer.View, cryptTableBuffer.View,
@@ -254,36 +255,27 @@ namespace MpqNameBreaker
                     return;
 
                 }
-                
 
-                /*
-                currentHashA = _hashCalculator.HashStringOptimized( _bruteForce.NameBytes, HashType.MpqHashNameA, _bruteForce.Prefix.Length, prefixSeed1A, prefixSeed2A );
-
-                if( HashA == currentHashA )
-                {
-                    currentHashB = _hashCalculator.HashStringOptimized( _bruteForce.NameBytes, HashType.MpqHashNameB, _bruteForce.Prefix.Length, prefixSeed1B, prefixSeed2B );
-
-                    // Detect collisions
-                    if( HashB == currentHashB )
-                    {
-                        WriteObject( "Name found: " + _bruteForce.Name );
-                        WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
-                        break;
-                    }
-                    else
-                    {
-                        WriteWarning( "Hash A collision found on name: " + _bruteForce.Name );
-                    }
-                }
-                */
-
-                
+                // Display statistics
                 billionCount += oneBatchBillionCount;
                 if( tempCount < billionCount )
                 {
                     tempCount = billionCount + 1;
                     TimeSpan elapsed = DateTime.Now - start;
-                    WriteVerbose( String.Format("Time: {0} - Count : {1:N0} billion", elapsed.ToString(), billionCount) );
+
+                    string lastName = "";
+                    for( int i = 0; i < BruteForceBatches.MaxGeneratedChars; i++ )
+                    {
+                        int idx = _bruteForceBatches.BatchNameSeedCharsetIndexes[ BruteForceBatches.MaxGeneratedChars-1, i ];
+
+                        if( idx == -1 )
+                            break;
+
+                        lastName += Convert.ToChar( _bruteForceBatches.CharsetBytes[ idx ] );
+                    }
+
+
+                    WriteVerbose( String.Format("Time: {0} - Name {1} - Count : {2:N0} billion", elapsed.ToString(), Prefix+lastName+Suffix, billionCount) );
                 }
                 
             }
