@@ -65,6 +65,7 @@ namespace MpqNameBreaker
         // Fields
         private BruteForce _bruteForce;
         private BruteForceBatches _bruteForceBatches;
+        private BruteForceBatchesOptimized _bruteForceBatchesOptimized;
         private HashCalculator _hashCalculator;
         private HashCalculatorGpu _hashCalculatorGpu;
 
@@ -105,7 +106,15 @@ namespace MpqNameBreaker
 
             _bruteForceBatches.Initialize();
 
+            // Initialize brute force batches optimized name generator
+            /*
+            if( AdditionalChars.Length > 0 )
+                _bruteForceBatchesOptimized = new BruteForceBatchesOptimized( GpuBatchSize, GpuBatchCharCount, AdditionalChars );
+            else
+                _bruteForceBatchesOptimized = new BruteForceBatchesOptimized( GpuBatchSize, GpuBatchCharCount );
 
+            _bruteForceBatchesOptimized.Initialize();
+            */
 
             // Initialize GPU hash calculator
             _hashCalculatorGpu = new HashCalculatorGpu();
@@ -128,7 +137,7 @@ namespace MpqNameBreaker
                     int,
                     int,
                     ArrayView<int>
-                >( Mpq.HashCalculatorGpu.HashStringsBatchA );
+                >( Mpq.HashCalculatorGpu.HashStringsBatch );
 
             // Prepare data for the kernel
             var charsetBuffer = _hashCalculatorGpu.Accelerator.Allocate<byte>( _bruteForceBatches.CharsetBytes.Length );
@@ -186,7 +195,8 @@ namespace MpqNameBreaker
             while( _bruteForceBatches.NextBatch() )
             {
                 // Debug
-                //string[] names = _bruteForceBatches.BatchNames;
+                string[] names = _bruteForceBatches.BatchNames;
+                //string[,] names = _bruteForceBatchesOptimized.BatchNames;
 
                 // Copy char indexes to buffer
                 charsetIndexesBuffer.CopyFrom( 
