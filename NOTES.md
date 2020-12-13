@@ -37,7 +37,7 @@ Brute force up-to:
 | ------------------------- | ------------- |
 | `x`                       | `28H-J000`    |
 | `[I-J]x.DUN`              | `00000000`    |
-| `LEVELS\x.DUN`            | `HKL-H-CA`    |
+| `LEVELS\x.DUN`            | `BKT8SO000`   |
 | `LEVELS\Lx.DUN`           | `L5GKY7000`   |
 | `LEVELS\DATA\x.DUN`       | `0D5DT_Q_`    |
 | `LEVELS\LDATA\x.DUN`      | `IIA6QZLQ`    |
