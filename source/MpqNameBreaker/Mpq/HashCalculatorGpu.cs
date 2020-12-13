@@ -64,7 +64,7 @@ namespace MpqNameBreaker.Mpq
             foreach( var acceleratorId in Accelerator.Accelerators )
             {
                 // Instanciate the Nvidia (CUDA) accelerator
-                if( acceleratorId.AcceleratorType == AcceleratorType.CPU )
+                if( acceleratorId.AcceleratorType == AcceleratorType.Cuda )
                 {
                     Accelerator = Accelerator.Create( context, acceleratorId );
                 }
@@ -95,11 +95,13 @@ namespace MpqNameBreaker.Mpq
             ArrayView<byte> suffixBytes,            // 1D array holding the indexes of the suffix chars
             uint hashALookup,                       // The hash A that we are looking for
             uint hashBLookup,                       // The hash B that we are looking for
-            uint seed1a,                             // Pre-computed hash A seed 1 for the string prefix
-            uint seed2a,                             // Pre-computed hash A seed 2 for the string prefix
-            uint seed1b,                             // Pre-computed hash B seed 1 for the string prefix
-            uint seed2b,                             // Pre-computed hash B seed 2 for the string prefix
+            uint seed1a,                            // Pre-computed hash A seed 1 for the string prefix
+            uint seed2a,                            // Pre-computed hash A seed 2 for the string prefix
+            uint seed1b,                            // Pre-computed hash B seed 1 for the string prefix
+            uint seed2b,                            // Pre-computed hash B seed 2 for the string prefix
+            bool firstBatch,
             int nameCount,                          // Name count limit (used as return condition)
+            int batchCharCount,                     // Number of generated chars in the batch
             ArrayView<int> foundNameCharsetIndexes  // 1D array containing the found name (if found)
         )
         {
@@ -111,6 +113,30 @@ namespace MpqNameBreaker.Mpq
             int typeA = 0x100; // Hash type A
             int typeB = 0x200; // Hash type B
 
+
+            // Brute force increment preparation
+            // Increase name count to !numChars-1 for first batch first name seed
+            if( firstBatch && index == 0 )
+            {
+                nameCount = -1;
+                for( int i = 1; i <= batchCharCount; i++ )
+                {
+                    int temp = 1;
+
+                    for( int j = 0; j < i; j++ )
+                        temp *= (int)charset.Length;
+                    nameCount += temp;
+
+                    if( i == batchCharCount )
+                    {
+                        temp = 1;
+                        for( int j = 0; j < i; j++ )
+                            temp *= (int)charset.Length;
+                        nameCount += temp;
+                    }
+                }
+            }
+            
             // Find the position of the last generated char
             for( int i = 0; i < charsetIndexes.Height; i++ )
             {
@@ -123,7 +149,7 @@ namespace MpqNameBreaker.Mpq
                 }
             }
 
-            // For each name
+            // For each name compute hash
             while( nameCount != 0 )
             {
                 uint s1 = seed1a;
@@ -178,16 +204,17 @@ namespace MpqNameBreaker.Mpq
 
                 }
 
-                // Move to next name in the batch
+                // Move to next name in the batch (brute force increment)
 
                 // Debug
+                /*
                 var tes0 = charsetIndexes[new Index2(index.X,0)];
                 var tes1 = charsetIndexes[new Index2(index.X,1)];
                 var tes2 = charsetIndexes[new Index2(index.X,2)];
                 var tes3 = charsetIndexes[new Index2(index.X,3)];
                 var tes4 = charsetIndexes[new Index2(index.X,4)];
                 var tes5 = charsetIndexes[new Index2(index.X,5)];
-
+                */
 
                 // If we are AT the last char of the charset
                 if( charsetIndexes[new Index2( index.X, generatedCharIndex )] == charset.Length-1 )
@@ -195,7 +222,11 @@ namespace MpqNameBreaker.Mpq
                     bool increaseNameSize = false;
 
                     // Go through all the charset indexes in reverse order
-                    for( int i = generatedCharIndex; i >= 0; --i )
+                    int stopValue = generatedCharIndex - batchCharCount + 1;
+                    if( firstBatch )
+                        stopValue = 0;
+
+                    for( int i = generatedCharIndex; i >= stopValue; --i )
                     {
                         // Retrieve the current char of the string
                         Index2 idx = new Index2( index.X, i );
@@ -228,14 +259,12 @@ namespace MpqNameBreaker.Mpq
                 {
                     // Move to next char
                     charsetIndexes[new Index2( index.X, generatedCharIndex )]++;
-
-                    //var test = charsetIndexes[new Index2( index.X, generatedCharIndex )];
                 }
-
 
                 nameCount--;
             }
 
+            /*
             // Debug
             var test0 = charsetIndexes[new Index2(index.X,0)];
             var test1 = charsetIndexes[new Index2(index.X,1)];
@@ -243,7 +272,7 @@ namespace MpqNameBreaker.Mpq
             var test3 = charsetIndexes[new Index2(index.X,3)];
             var test4 = charsetIndexes[new Index2(index.X,4)];
             var test5 = charsetIndexes[new Index2(index.X,5)];
-
+            */
 
         }
 

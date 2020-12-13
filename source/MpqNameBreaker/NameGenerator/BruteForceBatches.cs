@@ -52,8 +52,10 @@ namespace MpqNameBreaker.NameGenerator
 
         public bool Initialized { get; private set; }
 
-        // Fields
+        public bool FirstBatch { get; private set; }
+        public int BatchNumber { get; private set; }
 
+        // Fields
         private int _generatedCharIndex;
         private int[] _nameCharsetIndexes;
 
@@ -64,6 +66,8 @@ namespace MpqNameBreaker.NameGenerator
         {
             Initialized = false;
             CharsetBytes = Encoding.ASCII.GetBytes( Charset.ToUpper() );
+            FirstBatch = true;
+            BatchNumber = 0;
             _generatedCharIndex = 0;
         }
 
@@ -137,6 +141,9 @@ namespace MpqNameBreaker.NameGenerator
 
         public bool NextBatch()
         {
+            if( FirstBatch & BatchNumber > 0 )
+                FirstBatch = false;
+            
             int count = 0;
             while( NextBatchNameSeed() && count < BatchSize )
             {
@@ -146,15 +153,20 @@ namespace MpqNameBreaker.NameGenerator
                     BatchNameSeedCharsetIndexes[count,i] = _nameCharsetIndexes[i];
                 }
 
-                // Copy additional seed bytes to the 2D array
-                for( int j = _generatedCharIndex+1; j < _generatedCharIndex+1+BatchItemCharCount; j++ )
+                if( FirstBatch == false || count > 0 )
                 {
-                    BatchNameSeedCharsetIndexes[count,j] = 0;
-                }     
+                    // Copy additional seed bytes to the 2D array
+                    for( int j = _generatedCharIndex+1; j < _generatedCharIndex+1+BatchItemCharCount; j++ )
+                    {
+                        BatchNameSeedCharsetIndexes[count,j] = 0;
+                    }
+                }
+
 
                 count++;
             }
   
+            BatchNumber++;
             return true;
         }
     }

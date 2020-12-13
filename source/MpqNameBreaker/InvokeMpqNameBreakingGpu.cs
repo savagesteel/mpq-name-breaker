@@ -102,6 +102,8 @@ namespace MpqNameBreaker
                     uint,
                     uint,
                     uint,
+                    bool,
+                    int,
                     int,
                     ArrayView<int>
                 >( Mpq.HashCalculatorGpu.HashStringsBatchA );
@@ -144,7 +146,7 @@ namespace MpqNameBreaker
             while( _bruteForceBatches.NextBatch() )
             {
                 // Debug
-                string[] names = _bruteForceBatches.BatchNames;
+                //string[] names = _bruteForceBatches.BatchNames;
 
                 // Copy char indexes to buffer
                 charsetIndexesBuffer.CopyFrom( 
@@ -181,13 +183,13 @@ namespace MpqNameBreaker
                 // Call the kernel
                 kernel( charsetIndexesBuffer.Width, charsetBuffer.View, cryptTableBuffer.View,
                     charsetIndexesBuffer.View, suffixBytesBuffer.View, HashA, HashB, prefixSeed1A, prefixSeed2A, prefixSeed1B, prefixSeed2B,
-                    nameCount, foundNameCharsetIndexesBuffer.View );
+                    _bruteForceBatches.FirstBatch, nameCount-1, GpuBatchCharCount, foundNameCharsetIndexesBuffer.View );
 
                 // Wait for the kernel to complete
                 _hashCalculatorGpu.Accelerator.Synchronize();
 
 
-                var test = charsetIndexesBuffer.GetAs2DArray();
+                //var test = charsetIndexesBuffer.GetAs2DArray();
 
                 // If name was found
                 foundNameCharsetIndexes = foundNameCharsetIndexesBuffer.GetAsArray();
@@ -221,7 +223,7 @@ namespace MpqNameBreaker
                     string lastName = "";
                     for( int i = 0; i < BruteForceBatches.MaxGeneratedChars; i++ )
                     {
-                        int idx = _bruteForceBatches.BatchNameSeedCharsetIndexes[ BruteForceBatches.MaxGeneratedChars-1, i ];
+                        int idx = _bruteForceBatches.BatchNameSeedCharsetIndexes[ GpuBatchSize-1, i ];
 
                         if( idx == -1 )
                             break;
