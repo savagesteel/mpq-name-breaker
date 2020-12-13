@@ -140,7 +140,7 @@ namespace MpqNameBreaker.NameGenerator
             int count = 0;
             while( NextBatchNameSeed() && count < BatchSize )
             {
-                // Copy name bytes in the batch 2D array
+                // Copy name charset indexes in the batch 2D array
                 for( int i = 0; i < MaxGeneratedChars; ++i )
                 {
                     BatchNameSeedCharsetIndexes[count,i] = _nameCharsetIndexes[i];

@@ -103,12 +103,25 @@ namespace MpqNameBreaker.Mpq
             ArrayView<int> foundNameCharsetIndexes  // 1D array containing the found name (if found)
         )
         {
-            // Current char of the processed string
-            uint ch;
+            // Brute force increment variables
+            int generatedCharIndex = 0;
 
-            // Hash type
-            int typeA = 0x100;
-            int typeB = 0x200;
+            // Hash variables
+            uint ch;           // Current char of the processed string
+            int typeA = 0x100; // Hash type A
+            int typeB = 0x200; // Hash type B
+
+            // Find the position of the last generated char
+            for( int i = 0; i < charsetIndexes.Height; i++ )
+            {
+                Index2 idx = new Index2( index.X, i );
+                int charIndex = charsetIndexes[idx];
+                if( charsetIndexes[idx] == -1 )
+                {
+                    generatedCharIndex = i - 1;
+                    break;
+                }
+            }
 
             // For each name
             while( nameCount != 0 )
@@ -165,11 +178,73 @@ namespace MpqNameBreaker.Mpq
 
                 }
 
+                // Move to next name in the batch
 
-                // TODO: Add code to move to next name
+                // Debug
+                var tes0 = charsetIndexes[new Index2(index.X,0)];
+                var tes1 = charsetIndexes[new Index2(index.X,1)];
+                var tes2 = charsetIndexes[new Index2(index.X,2)];
+                var tes3 = charsetIndexes[new Index2(index.X,3)];
+                var tes4 = charsetIndexes[new Index2(index.X,4)];
+                var tes5 = charsetIndexes[new Index2(index.X,5)];
+
+
+                // If we are AT the last char of the charset
+                if( charsetIndexes[new Index2( index.X, generatedCharIndex )] == charset.Length-1 )
+                {
+                    bool increaseNameSize = false;
+
+                    // Go through all the charset indexes in reverse order
+                    for( int i = generatedCharIndex; i >= 0; --i )
+                    {
+                        // Retrieve the current char of the string
+                        Index2 idx = new Index2( index.X, i );
+
+                        // If we are at the last char of the charset then go back to the first char
+                        if( charsetIndexes[idx] == charset.Length-1 )
+                        {
+                            charsetIndexes[idx] = 0;
+                            
+                            if( i == 0 )
+                                increaseNameSize = true;
+                        }
+                        // If we are not at the last char of the charset then move to next char
+                        else
+                        {
+                            charsetIndexes[idx]++;
+                            break;
+                        }
+                    }
+
+                    if( increaseNameSize )
+                    {
+                        // Increase name size by one char
+                        generatedCharIndex++;
+                        charsetIndexes[new Index2( index.X, generatedCharIndex )] = 0;
+                    }
+                }
+                // If the generated char is within the charset
+                else
+                {
+                    // Move to next char
+                    charsetIndexes[new Index2( index.X, generatedCharIndex )]++;
+
+                    //var test = charsetIndexes[new Index2( index.X, generatedCharIndex )];
+                }
+
 
                 nameCount--;
             }
+
+            // Debug
+            var test0 = charsetIndexes[new Index2(index.X,0)];
+            var test1 = charsetIndexes[new Index2(index.X,1)];
+            var test2 = charsetIndexes[new Index2(index.X,2)];
+            var test3 = charsetIndexes[new Index2(index.X,3)];
+            var test4 = charsetIndexes[new Index2(index.X,4)];
+            var test5 = charsetIndexes[new Index2(index.X,5)];
+
+
         }
 
     }

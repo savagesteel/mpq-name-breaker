@@ -72,54 +72,6 @@ namespace MpqNameBreaker
             uint prefixSeed1A, prefixSeed2A, prefixSeed1B, prefixSeed2B, currentHashA, currentHashB;
             DateTime start = DateTime.Now;
 
-/*
-            WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
-
-            var context = new Context();
-            // For each available accelerator...
-            foreach( var acceleratorId in Accelerator.Accelerators )
-            {
-                // Instanciate the Nvidia (CUDA) accelerator
-                if( acceleratorId.AcceleratorType == AcceleratorType.Cuda )
-                {
-                    var accelerator = Accelerator.Create( context, acceleratorId );
-                    WriteObject( accelerator );
-
-
-                    // Load kernel
-                    var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1, ArrayView<int>, int>( Mpq.HashCalculatorGpu.MyKernel );
-
-                    var buffer = accelerator.Allocate<int>(102400000);
-                    
-                    // Launch buffer.Length many threads and pass a view to buffer
-                    // Note that the kernel launch does not involve any boxing
-                    kernel(buffer.Length, buffer.View, 42);
-
-                    // Wait for the kernel to finish...
-                    accelerator.Synchronize();
-
-                    // Resolve and verify data
-                    var data = buffer.GetAsArray();
-                    var test = data[1024];
-
-                    // Load kernel
-                    var kernel = accelerator.LoadAutoGroupedStreamKernel<Index1, ArrayView2D<byte>>( Mpq.HashCalculatorGpu.MyKernel2 );
-
-                    var buffer = accelerator.Allocate<byte>(1024,64);
-                    
-                    // Launch buffer.Width many threads and pass a view to buffer
-                    // Note that the kernel launch does not involve any boxing
-                    kernel(buffer.Width, buffer.View);
-
-                    // Wait for the kernel to finish...
-                    accelerator.Synchronize();
-
-                    // Resolve and verify data
-                    var data = buffer.GetAs2DArray();
-                }
-            }
-*/
-
             // Initialize brute force name generator
             _bruteForce = new BruteForce( Prefix, Suffix );
             _bruteForce.Initialize();
@@ -180,8 +132,7 @@ namespace MpqNameBreaker
             foundNameCharsetIndexesBuffer.CopyFrom( foundNameCharsetIndexes, 0, 0, foundNameCharsetIndexesBuffer.Extent );
             string foundName = "";
 
-
-            // Main loop
+            // MAIN
 
             WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
             WriteObject( _hashCalculatorGpu.Accelerator );
@@ -193,7 +144,7 @@ namespace MpqNameBreaker
             while( _bruteForceBatches.NextBatch() )
             {
                 // Debug
-                //string[] names = _bruteForceBatches.BatchNames;
+                string[] names = _bruteForceBatches.BatchNames;
 
                 // Copy char indexes to buffer
                 charsetIndexesBuffer.CopyFrom( 
@@ -225,6 +176,7 @@ namespace MpqNameBreaker
                 var hash = _hashCalculator.HashString(Encoding.ASCII.GetBytes("ITEMS2\\AXE.CEL"),HashType.MpqHashNameA);
                 var hasho = _hashCalculator.HashStringOptimized(Encoding.ASCII.GetBytes("ITEMS2\\AXE.CEL"),HashType.MpqHashNameA,7,prefixSeed1A,prefixSeed2A);
                 */
+
                 
                 // Call the kernel
                 kernel( charsetIndexesBuffer.Width, charsetBuffer.View, cryptTableBuffer.View,
@@ -233,6 +185,9 @@ namespace MpqNameBreaker
 
                 // Wait for the kernel to complete
                 _hashCalculatorGpu.Accelerator.Synchronize();
+
+
+                var test = charsetIndexesBuffer.GetAs2DArray();
 
                 // If name was found
                 foundNameCharsetIndexes = foundNameCharsetIndexesBuffer.GetAsArray();
