@@ -5,7 +5,7 @@ using ILGPU.Runtime;
 namespace MpqNameBreaker.Mpq
 {
     
-    public class HashCalculatorGpu
+    public class HashCalculatorAccelerated
     {
 
                 // Constants
@@ -23,7 +23,7 @@ namespace MpqNameBreaker.Mpq
 
 
         // Constructors
-        public HashCalculatorGpu()
+        public HashCalculatorAccelerated()
         { 
             InitializeCryptTable();
             InitializeGpuAccelarator();
