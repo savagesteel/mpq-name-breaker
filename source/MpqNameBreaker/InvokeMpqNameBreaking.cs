@@ -71,7 +71,7 @@ namespace MpqNameBreaker
         // Fields
         private BruteForce _bruteForce;
         private BruteForceBatches _bruteForceBatches;
-        private BruteForceBatches3D _bruteForceBatches3D;
+        //private BruteForceBatches3D _bruteForceBatches3D;
         private HashCalculator _hashCalculator;
         private HashCalculatorAccelerated _hashCalculatorAccelerated;
 

@@ -13,9 +13,6 @@ namespace MpqNameBreaker
     [OutputType(typeof(uint))]
     public class GetAcceleratorCommand : PSCmdlet
     {
-        // Fields
-        private HashCalculator _hashCalculator;
-
         // This method gets called once for each cmdlet in the pipeline when the pipeline starts executing
         protected override void BeginProcessing()
         {
