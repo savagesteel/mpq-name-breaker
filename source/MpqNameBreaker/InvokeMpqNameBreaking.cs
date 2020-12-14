@@ -275,7 +275,7 @@ namespace MpqNameBreaker
                     WriteVerbose( "End: " + DateTime.Now.ToString("HH:mm:ss.fff") );
                     TimeSpan elapsed = DateTime.Now - start;
                     WriteVerbose( "Elapsed: " + elapsed.ToString() );
-                    WriteVerbose( "Name found! " + Prefix.ToUpper() + foundName + Suffix.ToUpper() );
+                    WriteVerbose( "Name found! " );
                     WriteObject( Prefix.ToUpper() + foundName + Suffix.ToUpper() );
 
                     return;
