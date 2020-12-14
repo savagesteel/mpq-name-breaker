@@ -197,15 +197,14 @@ namespace MpqNameBreaker
 
             WriteVerbose( "Accelerator: " + _hashCalculatorAccelerated.Accelerator.Name 
                 + " (threads: " + _hashCalculatorAccelerated.Accelerator.MaxNumThreads + ")" );
-            WriteVerbose( "Batch size: " + BatchSize + ", " + BatchCharCount + "\n" );
+            WriteVerbose( "Batch size: " + BatchSize + ", " + BatchCharCount );
 
-            WriteVerbose( "Starting at: " + DateTime.Now.ToString("HH:mm:ss.fff") + "\n" ); 
+            DateTime start = DateTime.Now;
+            WriteVerbose( "Start: " + start.ToString("HH:mm:ss.fff") ); 
 
             double billionCount = 0;
             double tempCount = 0;
             double oneBatchBillionCount = ( Math.Pow(_bruteForceBatches.Charset.Length, BatchCharCount) * BatchSize ) / 1_000_000_000;
-
-            DateTime start = DateTime.Now;
             while( _bruteForceBatches.NextBatch() )
             {
                 // Debug
@@ -272,7 +271,11 @@ namespace MpqNameBreaker
                         foundName += Convert.ToChar( _bruteForceBatches.CharsetBytes[ idx ] );
                     }
 
-                    WriteVerbose( "Name found!" );
+                    WriteVerbose( "Start: " + start.ToString("HH:mm:ss.fff") ); 
+                    WriteVerbose( "End: " + DateTime.Now.ToString("HH:mm:ss.fff") );
+                    TimeSpan elapsed = DateTime.Now - start;
+                    WriteVerbose( "Elapsed: " + elapsed.ToString() );
+                    WriteVerbose( "Name found! " + Prefix.ToUpper() + foundName + Suffix.ToUpper() );
                     WriteObject( Prefix.ToUpper() + foundName + Suffix.ToUpper() );
 
                     return;
