@@ -1,6 +1,6 @@
+using System;
 using ILGPU;
 using ILGPU.Runtime;
-using System;
 
 namespace MpqNameBreaker.Mpq
 {
