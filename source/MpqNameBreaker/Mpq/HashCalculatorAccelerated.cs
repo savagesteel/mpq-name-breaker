@@ -378,7 +378,7 @@ namespace MpqNameBreaker.Mpq
             if( firstBatch && index == 0 )
             {
                 nameCount = -1;
-                for( int i = 1; i <= batchCharCount; i++ )
+                for( int i = 1; i <= batchCharCount; ++i )
                 {
                     int temp = 1;
 
@@ -397,7 +397,7 @@ namespace MpqNameBreaker.Mpq
             }
             
             // Find the position of the last generated char
-            for( int i = 0; i < charsetIndexes.Height; i++ )
+            for( int i = 0; i < charsetIndexes.Height; ++i )
             {
                 Index2 idx = new Index2( index.X, i );
                 int charIndex = charsetIndexes[idx];
@@ -411,20 +411,12 @@ namespace MpqNameBreaker.Mpq
             // For each name compute hash
             while( nameCount != 0 )
             {
-                // Debug
-                var test0 = charsetIndexes[new Index2(index.X,0)];
-                var test1 = charsetIndexes[new Index2(index.X,1)];
-                var test2 = charsetIndexes[new Index2(index.X,2)];
-                var test3 = charsetIndexes[new Index2(index.X,3)];
-                var test4 = charsetIndexes[new Index2(index.X,4)];
-                var test5 = charsetIndexes[new Index2(index.X,5)];
-
                 // Subsequent names
                 s1 = precalcSeeds1[ precalcSeedIndex ];
                 s2 = precalcSeeds2[ precalcSeedIndex ];
 
                 // Hash calculation
-                for( int i = precalcSeedIndex; i < charsetIndexes.Height; i++ )
+                for( int i = precalcSeedIndex; i < charsetIndexes.Height; ++i )
                 {
                     // Retrieve the current char of the string
                     Index1 charsetIdx = charsetIndexes[new Index2( index.X, i )];
@@ -451,7 +443,7 @@ namespace MpqNameBreaker.Mpq
                 // Process suffix
                 if( suffix )
                 {
-                    for( int i = 0; i < suffixBytes.Length; i++ )
+                    for( int i = 0; i < suffixBytes.Length; ++i )
                     {
                         // Retrieve current suffix char
                         ch = suffixBytes[i];
@@ -469,7 +461,7 @@ namespace MpqNameBreaker.Mpq
                     s1 = prefixSeed1b;
                     s2 = prefixSeed2b;
 
-                    for( int i = 0; i < charsetIndexes.Height; i++ )
+                    for( int i = 0; i < charsetIndexes.Height; ++i )
                     {
                         // Retrieve the current char of the string
                         Index1 charsetIdx = charsetIndexes[new Index2( index.X, i )];
@@ -487,7 +479,7 @@ namespace MpqNameBreaker.Mpq
                     // Process suffix
                     if( suffix )
                     {
-                        for( int i = 0; i < suffixBytes.Length; i++ )
+                        for( int i = 0; i < suffixBytes.Length; ++i )
                         {
                             // Retrieve current suffix char
                             ch = suffixBytes[i];
@@ -501,7 +493,7 @@ namespace MpqNameBreaker.Mpq
                     if( s1 == hashBLookup )
                     {
                         // Populate foundNameCharsetIndexes and return
-                        for( int i = 0; i < charsetIndexes.Height; i++ )
+                        for( int i = 0; i < charsetIndexes.Height; ++i )
                             foundNameCharsetIndexes[i] = charsetIndexes[new Index2( index.X, i )];
 
                         return;
