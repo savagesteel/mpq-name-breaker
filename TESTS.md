@@ -10,7 +10,7 @@ Invoke-MpqNameBreaking -HashA 0xF9D2098Cu -HashB 0x89706FB2u -Prefix 'GENDATA\' 
 Invoke-MpqNameBreaking -HashA 0x097BB9AEu -HashB 0xE3B01F82u -Prefix 'CTRLPAN\' -Suffix '.CEL' -Verbose
 
 # monsters\mega\balr.trn
-Invoke-MpqNameBreaking -HashA 0x26BBF734u -HashB 0x2C785839u -Prefix 'MONSTERS\MEGA\' -Verbose
+Invoke-MpqNameBreaking -HashA 0x26BBF734u -HashB 0x2C785839u -Prefix 'MONSTERS\MEGA\' -AdditionalChars '.' -Verbose
 
 
 Invoke-MpqNameBreaking -HashA u -HashB u -Prefix '' -Suffix '' -Verbose

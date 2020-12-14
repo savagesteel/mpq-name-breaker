@@ -272,7 +272,6 @@ namespace MpqNameBreaker
                         foundName += Convert.ToChar( _bruteForceBatches.CharsetBytes[ idx ] );
                     }
 
-                    WriteVerbose( "Start: " + start.ToString("HH:mm:ss.fff") ); 
                     WriteVerbose( "End: " + DateTime.Now.ToString("HH:mm:ss.fff") );
                     TimeSpan elapsed = DateTime.Now - start;
                     WriteVerbose( "Elapsed: " + elapsed.ToString() );
