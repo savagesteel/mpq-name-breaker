@@ -198,6 +198,7 @@ namespace MpqNameBreaker
             WriteVerbose( "Accelerator: " + _hashCalculatorAccelerated.Accelerator.Name 
                 + " (threads: " + _hashCalculatorAccelerated.Accelerator.MaxNumThreads + ")" );
             WriteVerbose( "Batch size: " + BatchSize + ", " + BatchCharCount );
+            WriteVerbose( "Charset: " + _bruteForceBatches.Charset );
 
             DateTime start = DateTime.Now;
             WriteVerbose( "Start: " + start.ToString("HH:mm:ss.fff") ); 
