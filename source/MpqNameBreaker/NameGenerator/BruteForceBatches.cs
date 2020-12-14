@@ -179,7 +179,7 @@ namespace MpqNameBreaker.NameGenerator
         }
     }
 
-    public class BruteForceBatchesOptimized
+    public class BruteForceBatches3D
     {
         // Constants
         public const int MaxGeneratedChars = 16;
@@ -241,7 +241,7 @@ namespace MpqNameBreaker.NameGenerator
 
         
         // Constructors
-        public BruteForceBatchesOptimized()
+        public BruteForceBatches3D()
         {
             Initialized = false;
             Charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-";
@@ -251,7 +251,7 @@ namespace MpqNameBreaker.NameGenerator
             _generatedCharIndex = 0;
         }
 
-        public BruteForceBatchesOptimized( int size, int charCount ) : this()
+        public BruteForceBatches3D( int size, int charCount ) : this()
         {
             this.BatchSize = size;
             this.BatchItemCharCount = charCount;
@@ -259,7 +259,7 @@ namespace MpqNameBreaker.NameGenerator
             BatchNameSeedCharsetIndexes = new int[ size, size, MaxGeneratedChars ];
         }
 
-        public BruteForceBatchesOptimized( int size, int charCount, string additionalChars ) : this( size, charCount )
+        public BruteForceBatches3D( int size, int charCount, string additionalChars ) : this( size, charCount )
         {
             Charset += additionalChars;
             CharsetBytes = Encoding.ASCII.GetBytes( Charset.ToUpper() );

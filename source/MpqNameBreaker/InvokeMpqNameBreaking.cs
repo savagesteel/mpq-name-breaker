@@ -71,7 +71,7 @@ namespace MpqNameBreaker
         // Fields
         private BruteForce _bruteForce;
         private BruteForceBatches _bruteForceBatches;
-        private BruteForceBatchesOptimized _bruteForceBatchesOptimized;
+        private BruteForceBatches3D _bruteForceBatches3D;
         private HashCalculator _hashCalculator;
         private HashCalculatorAccelerated _hashCalculatorAccelerated;
 
@@ -203,7 +203,7 @@ namespace MpqNameBreaker
             {
                 // Debug
                 string[] names = _bruteForceBatches.BatchNames;
-                //string[,] names = _bruteForceBatchesOptimized.BatchNames;
+                //string[,] names = _bruteForceBatches3D.BatchNames;
 
                 // Copy char indexes to buffer
                 charsetIndexesBuffer.CopyFrom( 
