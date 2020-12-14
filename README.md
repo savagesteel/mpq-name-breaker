@@ -28,7 +28,6 @@ Invoke-MpqNameBreaking -HashA 0xD50A0BCCu -HashB 0xB94F2DD2u -Prefix 'gendata\' 
 
 # Name breaking for "levels2\l1data\hero1.dun"
 Invoke-MpqNameBreaking -HashA 0xFA1E3FAAu -HashB 0x45E2A9B7u -Prefix 'LEVELS2\L1DATA\' -Suffix '.DUN' -Verbose
-
 ```
 
 ## Build
