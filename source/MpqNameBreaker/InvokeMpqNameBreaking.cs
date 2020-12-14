@@ -47,7 +47,7 @@ namespace MpqNameBreaker
             Position = 3,
             ValueFromPipelineByPropertyName = true)]
         [AllowEmptyString()]
-        public string AdditionalChars { get; set; } = "";
+        public string AdditionalChars { get; set; }
 
         [Parameter(
             Mandatory = false,
@@ -59,7 +59,7 @@ namespace MpqNameBreaker
             Mandatory = false,
             Position = 1,
             ValueFromPipelineByPropertyName = true)]
-        public int BatchSize { get; set; } = 100_000;
+        public int BatchSize { get; set; }
 
         [Parameter(
             Mandatory = false,
@@ -104,30 +104,24 @@ namespace MpqNameBreaker
                 prefixSeed2B = HashCalculatorAccelerated.HashSeed2;
             }
 
+            // Initialize GPU hash calculator
+            if( this.MyInvocation.BoundParameters.ContainsKey("AcceleratorId") )
+                _hashCalculatorAccelerated = new HashCalculatorAccelerated( AcceleratorId );
+            else
+                _hashCalculatorAccelerated = new HashCalculatorAccelerated();
+
+            // Define the batch size to MaxNumThreads of the accelerator if no custom value has been provided
+            if( !this.MyInvocation.BoundParameters.ContainsKey("BatchSize") )
+                BatchSize = _hashCalculatorAccelerated.Accelerator.MaxNumThreads;
+
             // Initialize brute force batches name generator
-            if( AdditionalChars.Length > 0 )
+            if( this.MyInvocation.BoundParameters.ContainsKey("AdditionalChars") )
                 _bruteForceBatches = new BruteForceBatches( BatchSize, BatchCharCount, AdditionalChars );
             else
                 _bruteForceBatches = new BruteForceBatches( BatchSize, BatchCharCount );
 
             _bruteForceBatches.Initialize();
 
-            // Initialize brute force batches optimized name generator
-            /*
-            if( AdditionalChars.Length > 0 )
-                _bruteForceBatchesOptimized = new BruteForceBatchesOptimized( BatchSize, BatchCharCount, AdditionalChars );
-            else
-                _bruteForceBatchesOptimized = new BruteForceBatchesOptimized( BatchSize, BatchCharCount );
-
-            _bruteForceBatchesOptimized.Initialize();
-            */
-
-            // Initialize GPU hash calculator
-
-            if( this.MyInvocation.BoundParameters.ContainsKey("AcceleratorId") )
-                _hashCalculatorAccelerated = new HashCalculatorAccelerated( AcceleratorId );
-            else            
-                _hashCalculatorAccelerated = new HashCalculatorAccelerated();
 
             // Load kernel (GPU function)
             // This function will calculate HashA for each name of a batch and report matches/collisions
@@ -194,9 +188,11 @@ namespace MpqNameBreaker
 
             // MAIN
 
-            WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff") );
-            WriteVerbose( "Accelerator name : " + _hashCalculatorAccelerated.Accelerator.Name );
-            WriteVerbose( "Accelerator threads : " + _hashCalculatorAccelerated.Accelerator.MaxNumThreads );
+            WriteVerbose( "Accelerator: " + _hashCalculatorAccelerated.Accelerator.Name 
+                + " (threads: " + _hashCalculatorAccelerated.Accelerator.MaxNumThreads + ")" );
+            WriteVerbose( "Batch size : " + BatchSize + "\n" );
+
+            WriteVerbose( "Starting at: " + DateTime.Now.ToString("HH:mm:ss.fff") + "\n" ); 
 
             double billionCount = 0;
             double tempCount = 0;

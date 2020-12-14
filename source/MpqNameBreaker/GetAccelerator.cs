@@ -33,7 +33,8 @@ namespace MpqNameBreaker
                 var accelerator = Accelerator.Create( context, acceleratorId );
 
                 // Output the accelerator information
-                WriteObject( new {Id = id, Type = acceleratorId.AcceleratorType, Name = accelerator.Name} );
+                WriteObject( new {Id = id, Name = accelerator.Name, 
+                    Type = acceleratorId.AcceleratorType, MaxNumThreads = accelerator.MaxNumThreads} );
                 
                 id++;
             }
