@@ -65,7 +65,7 @@ namespace MpqNameBreaker
             Mandatory = false,
             Position = 1,
             ValueFromPipelineByPropertyName = true)]
-        public int BatchCharCount { get; set; } = 3;
+        public int BatchCharCount { get; set; }
 
 
         // Fields
@@ -113,6 +113,14 @@ namespace MpqNameBreaker
             // Define the batch size to MaxNumThreads of the accelerator if no custom value has been provided
             if( !this.MyInvocation.BoundParameters.ContainsKey("BatchSize") )
                 BatchSize = _hashCalculatorAccelerated.Accelerator.MaxNumThreads;
+
+            if( !this.MyInvocation.BoundParameters.ContainsKey("BatchCharCount") )
+            {
+                if( _hashCalculatorAccelerated.Accelerator.MaxNumThreads < 1024 )
+                    BatchCharCount = 3;
+                else
+                    BatchCharCount = 4;
+            }
 
             // Initialize brute force batches name generator
             if( this.MyInvocation.BoundParameters.ContainsKey("AdditionalChars") )
@@ -189,7 +197,7 @@ namespace MpqNameBreaker
 
             WriteVerbose( "Accelerator: " + _hashCalculatorAccelerated.Accelerator.Name 
                 + " (threads: " + _hashCalculatorAccelerated.Accelerator.MaxNumThreads + ")" );
-            WriteVerbose( "Batch size : " + BatchSize + "\n" );
+            WriteVerbose( "Batch size: " + BatchSize + " Batch char count: " + BatchCharCount + "\n" );
 
             WriteVerbose( "Starting at: " + DateTime.Now.ToString("HH:mm:ss.fff") + "\n" ); 
 
