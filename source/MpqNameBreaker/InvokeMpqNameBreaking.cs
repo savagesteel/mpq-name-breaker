@@ -170,13 +170,13 @@ namespace MpqNameBreaker
             {
                 suffix = false;
                 suffixLength = 1;
-                suffixBytes = new byte[1];
-                suffixBytes[0] = 0;
+                suffixBytes = new byte[suffixLength];
+                suffixBytes[0] = 0x00;
             }
             var suffixBytesBuffer = _hashCalculatorAccelerated.Accelerator.Allocate<byte>( suffixLength );
             if( suffix )
             {
-                suffixBytesBuffer.CopyFrom( suffixBytes, 0, 0, suffixBytes.Length );
+                suffixBytesBuffer.CopyFrom( suffixBytes, 0, 0, suffixLength );
             }
 
 
