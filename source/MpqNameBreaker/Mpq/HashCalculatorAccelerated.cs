@@ -343,13 +343,13 @@ namespace MpqNameBreaker.Mpq
             ArrayView<byte> suffixBytes,            // 1D array holding the indexes of the suffix chars
             uint hashALookup,                       // The hash A that we are looking for
             uint hashBLookup,                       // The hash B that we are looking for
-            uint seed1a,                            // Pre-computed hash A seed 1 for the string prefix
-            uint seed2a,                            // Pre-computed hash A seed 2 for the string prefix
-            uint seed1b,                            // Pre-computed hash B seed 1 for the string prefix
-            uint seed2b,                            // Pre-computed hash B seed 2 for the string prefix
+            uint prefixSeed1a,                      // Pre-computed hash A seed 1 for the string prefix
+            uint prefixSeed2a,                      // Pre-computed hash A seed 2 for the string prefix
+            uint prefixSeed1b,                      // Pre-computed hash B seed 1 for the string prefix
+            uint prefixSeed2b,                      // Pre-computed hash B seed 2 for the string prefix
             bool firstBatch,
             int nameCount,                          // Name count limit (used as return condition)
-            int batchCharCount,                     // Number of generated chars in the batch
+            int batchCharCount, // MAX = 8          // Number of generated chars in the batch
             ArrayView<int> foundNameCharsetIndexes  // 1D array containing the found name (if found)
         )
         {
@@ -358,12 +358,20 @@ namespace MpqNameBreaker.Mpq
 
             // Hash variables
             uint ch;           // Current char of the processed string
+            uint s1, s2;       // Hash seeds
             int typeA = 0x100; // Hash type A
             int typeB = 0x200; // Hash type B
 
             bool suffix = true;
             if( suffixBytes[0] == 0 )
                 suffix = false;
+
+            // Hash precalculated seeds (after prefix)
+            uint[] precalcSeeds1 = new uint[8];
+            uint[] precalcSeeds2 = new uint[8];
+            precalcSeeds1[0] = prefixSeed1a;
+            precalcSeeds2[0] = prefixSeed2a;
+            int precalcSeedIndex = 0;
 
             // Brute force increment preparation
             // Increase name count to !numChars-1 for first batch first name seed
@@ -403,22 +411,41 @@ namespace MpqNameBreaker.Mpq
             // For each name compute hash
             while( nameCount != 0 )
             {
-                uint s1 = seed1a;
-                uint s2 = seed2a;
+                // Debug
+                var test0 = charsetIndexes[new Index2(index.X,0)];
+                var test1 = charsetIndexes[new Index2(index.X,1)];
+                var test2 = charsetIndexes[new Index2(index.X,2)];
+                var test3 = charsetIndexes[new Index2(index.X,3)];
+                var test4 = charsetIndexes[new Index2(index.X,4)];
+                var test5 = charsetIndexes[new Index2(index.X,5)];
 
-                for( int i = 0; i < charsetIndexes.Height; i++ )
+                // Subsequent names
+                s1 = precalcSeeds1[ precalcSeedIndex ];
+                s2 = precalcSeeds2[ precalcSeedIndex ];
+
+                // Hash calculation
+                for( int i = precalcSeedIndex; i < charsetIndexes.Height; i++ )
                 {
                     // Retrieve the current char of the string
                     Index1 charsetIdx = charsetIndexes[new Index2( index.X, i )];
 
                     if( charsetIdx == -1 ) // break if end of the string is reached
-                        break; 
+                        break;
 
                     ch = charset[ charsetIdx ];
 
                     // Hash calculation                    
                     s1 = cryptTable[typeA + ch] ^ (s1 + s2);
                     s2 = ch + s1 + s2 + (s2 << 5) + 3;
+
+                    // Store precalc seeds except if we are at the last character of the string
+                    // (then it's not needed because this char changes constantly)
+                    if( i < generatedCharIndex )
+                    {
+                        precalcSeeds1[precalcSeedIndex+1] = s1;
+                        precalcSeeds2[precalcSeedIndex+1] = s2;
+                        precalcSeedIndex++;
+                    }
                 }
 
                 // Process suffix
@@ -436,10 +463,11 @@ namespace MpqNameBreaker.Mpq
                 }
 
                 // Check if it matches the hash that we are looking for
+                // No precalculation because this is only executed on matches and collisions
                 if( s1 == hashALookup )
                 {
-                    s1 = seed1b;
-                    s2 = seed2b;
+                    s1 = prefixSeed1b;
+                    s2 = prefixSeed2b;
 
                     for( int i = 0; i < charsetIndexes.Height; i++ )
                     {
@@ -504,6 +532,10 @@ namespace MpqNameBreaker.Mpq
                             
                             if( i == 0 )
                                 increaseNameSize = true;
+
+                            // Go back in the precalc seeds (to recalculate since the char changed)
+                            if( precalcSeedIndex > 0 )
+                                precalcSeedIndex--;
                         }
                         // If we are not at the last char of the charset then move to next char
                         else

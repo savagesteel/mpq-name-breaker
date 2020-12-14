@@ -23,11 +23,12 @@ The default charset used for the namebreaking is `0123456789ABCDEFGHIJKLMNOPQRST
 It can be extended with the `-AdditionalChars` parameter.
 
 ```powershell
-# Name breaking for "gendata\cuttt.pal" (CPU monothread)
+# Name breaking for "gendata\cuttt.pal"
 Invoke-MpqNameBreaking -HashA 0xD50A0BCCu -HashB 0xB94F2DD2u -Prefix 'gendata\' -Suffix '.pal' -Verbose
 
-# Name breaking for "levels2\l1data\hero1.dun" (GPU accelerated)
-Invoke-MpqNameBreakingGpu -HashA 0xFA1E3FAAu -HashB 0x45E2A9B7u -Prefix 'LEVELS2\L1DATA\' -Suffix '.DUN' -Verbose
+# Name breaking for "levels2\l1data\hero1.dun"
+Invoke-MpqNameBreaking -HashA 0xFA1E3FAAu -HashB 0x45E2A9B7u -Prefix 'LEVELS2\L1DATA\' -Suffix '.DUN' -Verbose
+
 ```
 
 ## Build

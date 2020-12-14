@@ -122,7 +122,6 @@ namespace MpqNameBreaker
 
             _bruteForceBatches.Initialize();
 
-
             // Load kernel (GPU function)
             // This function will calculate HashA for each name of a batch and report matches/collisions
             var kernel = _hashCalculatorAccelerated.Accelerator.LoadAutoGroupedStreamKernel< 
@@ -141,7 +140,7 @@ namespace MpqNameBreaker
                     int,
                     int,
                     ArrayView<int>
-                >( Mpq.HashCalculatorAccelerated.HashStringsBatch );
+                >( Mpq.HashCalculatorAccelerated.HashStringsBatchOptimized );
 
             // Prepare data for the kernel
             var charsetBuffer = _hashCalculatorAccelerated.Accelerator.Allocate<byte>( _bruteForceBatches.CharsetBytes.Length );

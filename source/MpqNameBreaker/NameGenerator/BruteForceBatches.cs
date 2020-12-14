@@ -21,7 +21,7 @@ namespace MpqNameBreaker.NameGenerator
 
         // Number of chars in one batch item.
         // e.g. if this number is 5 each batch item will contain Charset.Length ^ 5 names
-        public int BatchItemCharCount { get; private set; } 
+        public int BatchItemCharCount { get; private set; }
 
         // The batch seeds are stored in a 2D array.
         // Each line contains the bytes of one seed name string.
