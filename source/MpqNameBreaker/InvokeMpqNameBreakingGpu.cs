@@ -184,8 +184,9 @@ namespace MpqNameBreaker
 
             // MAIN
 
-            WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff"));
-            WriteObject( "Accelerator : " + _hashCalculatorGpu.Accelerator.Name );
+            WriteVerbose( DateTime.Now.ToString("HH:mm:ss.fff") );
+            WriteVerbose( "Accelerator name : " + _hashCalculatorGpu.Accelerator.Name );
+            WriteVerbose( "Accelerator threads : " + _hashCalculatorGpu.Accelerator.MaxNumThreads );
 
             double billionCount = 0;
             double tempCount = 0;
@@ -258,9 +259,10 @@ namespace MpqNameBreaker
                         foundName += Convert.ToChar( _bruteForceBatches.CharsetBytes[ idx ] );
                     }
 
-                    WriteObject( "Name found: " + Prefix.ToUpper() + foundName + Suffix.ToUpper() );
-                    return;
+                    WriteVerbose( "Name found!" );
+                    WriteObject( Prefix.ToUpper() + foundName + Suffix.ToUpper() );
 
+                    return;
                 }
 
                 // Display statistics
@@ -281,8 +283,7 @@ namespace MpqNameBreaker
                         lastName += Convert.ToChar( _bruteForceBatches.CharsetBytes[ idx ] );
                     }
 
-
-                    WriteVerbose( String.Format("Time: {0} - Name {1} - Count : {2:N0} billion", elapsed.ToString(), Prefix.ToUpper()+lastName+Suffix.ToUpper(), billionCount) );
+                    WriteVerbose( String.Format("Elapsed time: {0} - Name: {1} - Name count: {2:N0} billion", elapsed.ToString(), Prefix.ToUpper()+lastName+Suffix.ToUpper(), billionCount) );
                 }
                 
             }
