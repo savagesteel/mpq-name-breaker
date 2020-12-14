@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using ILGPU;
 using ILGPU.Runtime;
 
@@ -27,6 +29,12 @@ namespace MpqNameBreaker.Mpq
         { 
             InitializeCryptTable();
             InitializeGpuAccelarator();
+        }
+
+        public HashCalculatorAccelerated( int acceleratorId )
+        { 
+            InitializeCryptTable();
+            InitializeGpuAccelarator( acceleratorId );
         }
 
         // Methods
@@ -59,16 +67,38 @@ namespace MpqNameBreaker.Mpq
 
         public void InitializeGpuAccelarator()
         {
+            List<Accelerator> accelerators = new List<Accelerator>();
+
             var context = new Context();
-            // For each available accelerator...
+            // Get all available accelerators
             foreach( var acceleratorId in Accelerator.Accelerators )
             {
-                // Instanciate the Nvidia (CUDA) accelerator
-                if( acceleratorId.AcceleratorType == AcceleratorType.Cuda )
-                {
-                    Accelerator = Accelerator.Create( context, acceleratorId );
-                }
+                accelerators.Add( 
+                    Accelerator.Create( context, acceleratorId ) );
             }
+
+            // Select accelerator with the highest number of threads
+            Accelerator = accelerators.Aggregate(
+                (i1, i2) => i1.MaxNumThreads > i2.MaxNumThreads ? i1 : i2 );
+        }
+
+        public void InitializeGpuAccelarator( int acceleratorId )
+        {
+            var context = new Context();
+
+            // For each available accelerator...
+            int id = 0;
+            foreach( var a in Accelerator.Accelerators )
+            {
+                if( id == acceleratorId )
+                    Accelerator = Accelerator.Create( context, a );
+    
+                id++;
+            }
+
+            if( Accelerator == null )
+                throw new System.ArgumentException( "Accelerator ID not found." );
+
         }
 
         public static void MyKernel(
