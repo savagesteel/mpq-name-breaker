@@ -209,7 +209,8 @@ namespace MpqNameBreaker
             while( _bruteForceBatches.NextBatch() )
             {
                 // Debug
-                string[] names = _bruteForceBatches.BatchNames;
+                //string[] names = _bruteForceBatches.BatchNames;
+                //string lastOfNames = names[names.Length-1];
                 //string[,] names = _bruteForceBatches3D.BatchNames;
 
                 // Copy char indexes to buffer

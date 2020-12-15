@@ -27,37 +27,26 @@ Invoke-MpqNameBreaking -HashA 0xFA1E3FAAu -HashB 0x45E2A9B7u -Prefix 'LEVELS2\L1
 # gendata\create4.pal
 Invoke-MpqNameBreaking -HashA 0xF9D2098Cu -HashB 0x89706FB2u -Prefix 'GENDATA\' -Suffix '.PAL' -Verbose
 
-
-
-# 10 chars, additional chars
-# (listfile)
-Invoke-MpqNameBreaking -HashA 0xFD657910u -HashB 0x4E9B98A7u -AdditionalChars '()' -Verbose
-
-
-
-# first batch, firt name line upper boundary (before second name: 10000)
+# first batch, firt name line, last name (before second name: 10000)
 # 0---
 Invoke-MpqNameBreaking -HashA 0xF860087Bu -HashB 0x2164B6E2u -BatchSize 20480 -BatchCharCount 4 -Verbose
 
+# first batch, last name line, last name ()
+# D5Z----
+Invoke-MpqNameBreaking -HashA 0xEA899001u -HashB 0x7CDC1219u -BatchSize 20480 -BatchCharCount 4 -Verbose
 
-
-
-# _______
-Invoke-MpqNameBreaking -HashA 0x88235DA3u -HashB 0x868CCF75u -Verbose
-
+# 7 chars full range benchmark
 # -------
 Invoke-MpqNameBreaking -HashA 0x87095B2Du -HashB 0xD6507679u -Verbose
 
+```
 
+## Benchmark tests
 
-Invoke-MpqNameBreaking -HashA u -HashB u -Prefix '' -Suffix '' -Verbose
-Invoke-MpqNameBreaking -HashA u -HashB u -Prefix '' -Suffix '' -Verbose
-Invoke-MpqNameBreaking -HashA u -HashB u -Prefix '' -Suffix '' -Verbose
-Invoke-MpqNameBreaking -HashA u -HashB u -Prefix '' -Suffix '' -Verbose
-Invoke-MpqNameBreaking -HashA u -HashB u -Prefix '' -Suffix '' -Verbose
-Invoke-MpqNameBreaking -HashA u -HashB u -Prefix '' -Suffix '' -Verbose
-
-
+```powershell
+# 8 chars, full range benchmark
+# --------
+Invoke-MpqNameBreaking -HashA 0xD9F109CEu -HashB 0x4E950A6Au -Verbose
 ```
 
 
@@ -66,4 +55,8 @@ Invoke-MpqNameBreaking -HashA u -HashB u -Prefix '' -Suffix '' -Verbose
 ```powershell
 # ctrlpan\talkpanl.cel
 Invoke-MpqNameBreaking -HashA 0x097BB9AEu -HashB 0xE3B01F82u -Prefix 'CTRLPAN\' -Suffix '.CEL' -Verbose
+
+# 10 chars, additional chars
+# (listfile)
+Invoke-MpqNameBreaking -HashA 0xFD657910u -HashB 0x4E9B98A7u -AdditionalChars '()' -Verbose
 ```
