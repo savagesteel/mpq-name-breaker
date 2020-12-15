@@ -15,23 +15,23 @@ Invoke-MpqNameBreaking -HashA 0x882D1BA3u -HashB 0xC2303F7Du -Suffix '.EXE' -Ver
 # temps09
 Invoke-MpqNameBreaking -HashA 0xD0F46DB3u -HashB 0x86F1A056u -Prefix 'T' -Verbose
 
-# 7 chars, prefix, additional chars
-# monsters\mega\balr.trn
-Invoke-MpqNameBreaking -HashA 0x26BBF734u -HashB 0x2C785839u -Prefix 'MONSTERS\MEGA\' -AdditionalChars '.' -Verbose
-
 # 5 chars, prefix, suffix
 # levels2\l1data\hero1.dun
 Invoke-MpqNameBreaking -HashA 0xFA1E3FAAu -HashB 0x45E2A9B7u -Prefix 'LEVELS2\L1DATA\' -Suffix '.DUN' -Verbose
 
-# 8 chars, prefix, suffix
-# gendata\create4.pal
-Invoke-MpqNameBreaking -HashA 0xF9D2098Cu -HashB 0x89706FB2u -Prefix 'GENDATA\' -Suffix '.PAL' -Verbose
+# 7 chars, prefix, suffix, additional chars
+# data\inv\inv.pal
+Invoke-MpqNameBreaking -HashA 0xB6756BB8u -HashB 0x0BEF76C7u -Prefix 'DATA\' -Suffix '.PAL' -AdditionalChars '\.' -Verbose
+
+# 7 chars, prefix, additional chars
+# monsters\mega\balr.trn
+Invoke-MpqNameBreaking -HashA 0x26BBF734u -HashB 0x2C785839u -Prefix 'MONSTERS\MEGA\' -AdditionalChars '.' -Verbose
 
 # first batch, firt name line, last name (before second name: 10000)
 # 0---
 Invoke-MpqNameBreaking -HashA 0xF860087Bu -HashB 0x2164B6E2u -BatchSize 20480 -BatchCharCount 4 -Verbose
 
-# first batch, last name line, last name ()
+# first batch, last name line, last name
 # D5Z----
 Invoke-MpqNameBreaking -HashA 0xEA899001u -HashB 0x7CDC1219u -BatchSize 20480 -BatchCharCount 4 -Verbose
 
@@ -39,6 +39,9 @@ Invoke-MpqNameBreaking -HashA 0xEA899001u -HashB 0x7CDC1219u -BatchSize 20480 -B
 # -------
 Invoke-MpqNameBreaking -HashA 0x87095B2Du -HashB 0xD6507679u -Verbose
 
+# 8 chars, prefix, suffix
+# gendata\create4.pal
+Invoke-MpqNameBreaking -HashA 0xF9D2098Cu -HashB 0x89706FB2u -Prefix 'GENDATA\' -Suffix '.PAL' -Verbose
 ```
 
 ## Benchmark tests
@@ -51,8 +54,6 @@ Invoke-MpqNameBreaking -HashA 0xD9F109CEu -HashB 0x4E950A6Au -Verbose
 # 8 chars, full range with 4-chars suffix benchmark
 # --------.---
 Invoke-MpqNameBreaking -HashA 0x70369F9Fu -HashB 0xD6614847u -Suffix '.---' -Verbose
-
-
 ```
 
 ## Additional tests
