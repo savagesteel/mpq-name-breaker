@@ -22,16 +22,18 @@ It relies on the [ILGPU 0.9.2]() library.
 
 ```powershell
 # Name breaking for "gendata\cuttt.pal"
-Invoke-MpqNameBreaking -HashA 0xD50A0BCCu -HashB 0xB94F2DD2u -Prefix 'gendata\' -Suffix '.pal' -Verbose
+Invoke-MpqNameBreaking -HashA 0xD50A0BCCu -HashB 0xB94F2DD2u `
+    -Prefix 'gendata\' -Suffix '.pal' -Verbose
 ```
 
-The `-HashA` and `-HashB` parameters are unsinged 32-bit integers, the `0x` prefix and `u` suffix are needed.
+The `-HashA` and `-HashB` parameters are unsigned 32-bit integers, the `0x` prefix and `u` suffix are needed.
 
 The case does not matter for `-Prefix`, `-Suffix` and parameters.  
 
 ```powershell
 # Name breaking without suffix for "monsters\mega\balr.trn"
-Invoke-MpqNameBreaking -HashA 0x26BBF734u -HashB 0x2C785839u -Prefix 'MONSTERS\MEGA\' -AdditionalChars '.' -Verbose
+Invoke-MpqNameBreaking -HashA 0x26BBF734u -HashB 0x2C785839u `
+    -Prefix 'MONSTERS\MEGA\' -AdditionalChars '.' -Verbose
 ```
 
 The default charset used for the name breaking is `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-`  
