@@ -23,7 +23,7 @@ Invoke-MpqNameBreaking -HashA 0x26BBF734u -HashB 0x2C785839u -Prefix 'MONSTERS\M
 # levels2\l1data\hero1.dun
 Invoke-MpqNameBreaking -HashA 0xFA1E3FAAu -HashB 0x45E2A9B7u -Prefix 'LEVELS2\L1DATA\' -Suffix '.DUN' -Verbose
 
-# 7 chars, prefix, suffix
+# 8 chars, prefix, suffix
 # gendata\create4.pal
 Invoke-MpqNameBreaking -HashA 0xF9D2098Cu -HashB 0x89706FB2u -Prefix 'GENDATA\' -Suffix '.PAL' -Verbose
 
@@ -35,7 +35,7 @@ Invoke-MpqNameBreaking -HashA 0xF860087Bu -HashB 0x2164B6E2u -BatchSize 20480 -B
 # D5Z----
 Invoke-MpqNameBreaking -HashA 0xEA899001u -HashB 0x7CDC1219u -BatchSize 20480 -BatchCharCount 4 -Verbose
 
-# 7 chars full range benchmark
+# 7 chars, full range benchmark
 # -------
 Invoke-MpqNameBreaking -HashA 0x87095B2Du -HashB 0xD6507679u -Verbose
 
@@ -47,8 +47,13 @@ Invoke-MpqNameBreaking -HashA 0x87095B2Du -HashB 0xD6507679u -Verbose
 # 8 chars, full range benchmark
 # --------
 Invoke-MpqNameBreaking -HashA 0xD9F109CEu -HashB 0x4E950A6Au -Verbose
-```
 
+# 8 chars, full range with 4-chars suffix benchmark
+# --------.---
+Invoke-MpqNameBreaking -HashA 0x70369F9Fu -HashB 0xD6614847u -Suffix '.---' -Verbose
+
+
+```
 
 ## Additional tests
 
