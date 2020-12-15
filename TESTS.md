@@ -35,6 +35,21 @@ Invoke-MpqNameBreaking -HashA 0xFD657910u -HashB 0x4E9B98A7u -AdditionalChars '(
 
 
 
+# first batch, firt name line upper boundary (before second name: 10000)
+# 0---
+Invoke-MpqNameBreaking -HashA 0xF860087Bu -HashB 0x2164B6E2u -BatchSize 20480 -BatchCharCount 4 -Verbose
+
+
+
+
+# _______
+Invoke-MpqNameBreaking -HashA 0x88235DA3u -HashB 0x868CCF75u -Verbose
+
+# -------
+Invoke-MpqNameBreaking -HashA 0x87095B2Du -HashB 0xD6507679u -Verbose
+
+
+
 Invoke-MpqNameBreaking -HashA u -HashB u -Prefix '' -Suffix '' -Verbose
 Invoke-MpqNameBreaking -HashA u -HashB u -Prefix '' -Suffix '' -Verbose
 Invoke-MpqNameBreaking -HashA u -HashB u -Prefix '' -Suffix '' -Verbose

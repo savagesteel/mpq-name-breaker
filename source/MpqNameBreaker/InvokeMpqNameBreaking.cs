@@ -247,7 +247,7 @@ namespace MpqNameBreaker
                 // Call the kernel
                 kernel( charsetIndexesBuffer.Width, charsetBuffer.View, cryptTableBuffer.View,
                     charsetIndexesBuffer.View, suffixBytesBuffer.View, HashA, HashB, prefixSeed1A, prefixSeed2A, prefixSeed1B, prefixSeed2B,
-                    _bruteForceBatches.FirstBatch, nameCount-1, BatchCharCount, foundNameCharsetIndexesBuffer.View );
+                    _bruteForceBatches.FirstBatch, nameCount, BatchCharCount, foundNameCharsetIndexesBuffer.View );
 
                 // Wait for the kernel to complete
                 _hashCalculatorAccelerated.Accelerator.Synchronize();
