@@ -1,7 +1,7 @@
 # MPQ Name Breaker
 ## Introduction
 
-This tool is a PowerShell module with GPU acceleration support that can be used to brute force Blizzard MPQ archives' name hashes.  
+This tool is a PowerShell module that can be used to brute force Blizzard MPQ archives' name hashes.  
 This has been successfully tested on:
 - Windows 10 x64
 - PowerShell 7.1 x64
