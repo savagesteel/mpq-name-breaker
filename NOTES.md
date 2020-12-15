@@ -17,11 +17,7 @@ The file is a dungeon map so the extension is likely `.dun`
 ### Command line
 
 ```powershell
-# CPU monothread
-Invoke-MpqNameBreaking -HashA 0xB29FC135u -HashB 0x22575C4Au -Prefix 'LEVELS\L1DATA\' -Suffix '.DUN' -Verbose
-
-# GPU
-Invoke-MpqNameBreakingGpu -HashA 0xB29FC135u -HashB 0x22575C4Au -Prefix 'levels\l1data\' -Suffix '.dun' -AdditionalChars " " -GpuBatchSize 100000 -GpuBatchCharCount 3 -Verbose
+Invoke-MpqNameBreaking -HashA 0xB29FC135u -HashB 0x22575C4Au -Prefix 'levels\l1data\' -Suffix '.dun' -AdditionalChars " " -Verbose
 ```
 
 ### Already checked
@@ -74,9 +70,9 @@ Brute force up-to:
 
 ```powershell
 # File 0
-Invoke-MpqNameBreakingGpu -HashA 0xF613E692u -HashB 0xA39AA926u -Prefix '' -Suffix '' -AdditionalChars '' -GpuBatchSize 100KB -GpuBatchCharCount 3 -Verbose
+Invoke-MpqNameBreaking -HashA 0xF613E692u -HashB 0xA39AA926u -Verbose
 
 # File 7
-Invoke-MpqNameBreakingGpu -HashA 0x8EF894ECu -HashB 0xA76EF1CFu -Prefix '' -Suffix '.snp' -AdditionalChars '' -GpuBatchSize 100KB -GpuBatchCharCount 3 -Verbose
+Invoke-MpqNameBreaking -HashA 0x8EF894ECu -HashB 0xA76EF1CFu -Suffix '.snp' -Verbose
 ```
 
