@@ -7,14 +7,14 @@ This experimental work and has been successfully tested on:
 - PowerShell 7.1 x64
 
 The tool also supports GPU accelerated name breaking.  
-It relies on the [ILGPU 0.9.2]() library.
+It relies on the [ILGPU](http://www.ilgpu.net) library.
 
 
 ## Quick start
 
 1. If you don't have it yet, download and install [PowerShell 7](https://github.com/PowerShell/PowerShell/releases/latest).
-2. Download and unzip the MpqNameBreaker PowerShell module.
-3. Launch PowerShell 7 and run `Import-Module MpqNameBreaker.dll`
+2. Download and unzip the [MpqNameBreaker](https://github.com/savagesteel/mpq-name-breaker/releases) PowerShell module.
+3. Launch PowerShell 7, `cd` to the folder where you unzipped the module and run `Import-Module .\MpqNameBreaker`
 4. See usage section below to launch name breaking.
 
 
