@@ -20,26 +20,24 @@ It relies on the [ILGPU](http://www.ilgpu.net) library.
 
 ## Usage
 
+The `-HashA` and `-HashB` parameters are unsigned 32-bit integers, the `0x` prefix and `u` suffix are needed.  
+Parameters are *not* case sensitive.  
+
 ```powershell
 # Name breaking for "gendata\cuttt.pal"
-Invoke-MpqNameBreaking -HashA 0xD50A0BCCu -HashB 0xB94F2DD2u `
-    -Prefix 'gendata\' -Suffix '.pal' -Verbose
-```
-
-The `-HashA` and `-HashB` parameters are unsigned 32-bit integers, the `0x` prefix and `u` suffix are needed.
-
-The case does not matter for `-Prefix`, `-Suffix` and parameters.  
-
-```powershell
-# Name breaking without suffix for "monsters\mega\balr.trn"
-Invoke-MpqNameBreaking -HashA 0x26BBF734u -HashB 0x2C785839u `
-    -Prefix 'MONSTERS\MEGA\' -AdditionalChars '.' -Verbose
+Invoke-MpqNameBreaking -HashA 0xD50A0BCCu -HashB 0xB94F2DD2u -Prefix 'gendata\' -Suffix '.pal' -Verbose
 ```
 
 The default charset used for the name breaking is `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-`.  
 It can be extended with the `-AdditionalChars` parameter, or overridden with the `-Charset` parameter.
 
+```powershell
+# Name breaking without suffix but with additional "." character for "monsters\mega\balr.trn"
+Invoke-MpqNameBreaking -HashA 0x26BBF734u -HashB 0x2C785839u -Prefix 'MONSTERS\MEGA\' -AdditionalChars '.' -Verbose
 
+# Name breaking with prefix, suffix and a custom charset containing only letters + "\" for "plrgfx\rogue\rls\rlsas.cl2"
+Invoke-MpqNameBreaking -HashA 0xCB636CF4u -HashB 0x7B3E6451u -Prefix 'plrgfx\rogue\r' -Charset 'ABCDEFGHIJKLMNOPQRSTUVWXYZ\' -Suffix '.cl2'  -Verbose
+```
 
 ## Build
 
