@@ -36,7 +36,8 @@ It can be extended with the `-AdditionalChars` parameter, or overridden with the
 Invoke-MpqNameBreaking -HashA 0x26BBF734u -HashB 0x2C785839u `
   -Prefix 'MONSTERS\MEGA\' -AdditionalChars '.' -Verbose
 
-# Name breaking with prefix, suffix and a custom charset containing only letters + "\" for "plrgfx\rogue\rls\rlsas.cl2"
+# Name breaking with prefix, suffix and a custom charset containing 
+# only letters + "\" for "plrgfx\rogue\rls\rlsas.cl2"
 Invoke-MpqNameBreaking -HashA 0xCB636CF4u -HashB 0x7B3E6451u `
   -Prefix 'plrgfx\rogue\r' -Charset 'ABCDEFGHIJKLMNOPQRSTUVWXYZ\' -Suffix '.cl2'  -Verbose
 ```
