@@ -7,10 +7,9 @@ namespace MpqNameBreaker.NameGenerator
     {
         // Constants
         public const int MaxGeneratedChars = 16;
-        //public const string Charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-.()\\";
-        // ".\\()"
+        public const string DefaultCharset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-";
 
-        public string Charset { get; private set; }
+        public string Charset { get; private set; } = DefaultCharset;
         public byte[] CharsetBytes { get; private set; }
 
 
@@ -51,40 +50,29 @@ namespace MpqNameBreaker.NameGenerator
             } 
         }
 
-        public bool Initialized { get; private set; }
+        public bool Initialized { get; private set; } = false;
 
-        public bool FirstBatch { get; private set; }
-        public int BatchNumber { get; private set; }
+        public bool FirstBatch { get; private set; } = true;
+        public int BatchNumber { get; private set; } = 0;
 
         // Fields
-        private int _generatedCharIndex;
+        private int _generatedCharIndex = 0;
         private int[] _nameCharsetIndexes;
 
-
-        
         // Constructors
         public BruteForceBatches()
         {
-            Initialized = false;
-            Charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-";
             CharsetBytes = Encoding.ASCII.GetBytes( Charset.ToUpper() );
-            FirstBatch = true;
-            BatchNumber = 0;
-            _generatedCharIndex = 0;
         }
 
-        public BruteForceBatches( int size, int charCount ) : this()
+        public BruteForceBatches( int size, int charCount, string additionalChars = "", string charset = DefaultCharset)
         {
             this.BatchSize = size;
             this.BatchItemCharCount = charCount;
+            this.BatchNameSeedCharsetIndexes = new int[size, MaxGeneratedChars];
 
-            BatchNameSeedCharsetIndexes = new int[ size, MaxGeneratedChars ];
-        }
-
-        public BruteForceBatches( int size, int charCount, string additionalChars ) : this( size, charCount )
-        {
-            Charset += additionalChars;
-            CharsetBytes = Encoding.ASCII.GetBytes( Charset.ToUpper() );
+            this.Charset = charset + additionalChars;
+            this.CharsetBytes = Encoding.ASCII.GetBytes( Charset.ToUpper() );
         }
 
         // Methods

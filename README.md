@@ -36,8 +36,9 @@ Invoke-MpqNameBreaking -HashA 0x26BBF734u -HashB 0x2C785839u `
     -Prefix 'MONSTERS\MEGA\' -AdditionalChars '.' -Verbose
 ```
 
-The default charset used for the name breaking is `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-`  
-It can be extended with the `-AdditionalChars` parameter.
+The default charset used for the name breaking is `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-`.  
+It can be extended with the `-AdditionalChars` parameter, or overridden with the `-Charset` parameter.
+
 
 
 ## Build

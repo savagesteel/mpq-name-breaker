@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Text;
-using System.Collections;
-using System.Diagnostics;
 using System.Management.Automation;
-using System.Management.Automation.Runspaces;
 using MpqNameBreaker.NameGenerator;
 using MpqNameBreaker.Mpq;
 using ILGPU;
 using ILGPU.Runtime;
-//using System.Collections.Immutable;
 
 namespace MpqNameBreaker
 {
@@ -47,7 +43,14 @@ namespace MpqNameBreaker
             Position = 3,
             ValueFromPipelineByPropertyName = true)]
         [AllowEmptyString()]
-        public string AdditionalChars { get; set; }
+        public string AdditionalChars { get; set; } = "";
+
+        [Parameter(
+            Mandatory = false,
+            Position = 3,
+            ValueFromPipelineByPropertyName = true)]
+        [AllowEmptyString()]
+        public string Charset { get; set; } = BruteForceBatches.DefaultCharset;
 
         [Parameter(
             Mandatory = false,
@@ -123,11 +126,7 @@ namespace MpqNameBreaker
             }
 
             // Initialize brute force batches name generator
-            if( this.MyInvocation.BoundParameters.ContainsKey("AdditionalChars") )
-                _bruteForceBatches = new BruteForceBatches( BatchSize, BatchCharCount, AdditionalChars );
-            else
-                _bruteForceBatches = new BruteForceBatches( BatchSize, BatchCharCount );
-
+            _bruteForceBatches = new BruteForceBatches( BatchSize, BatchCharCount, AdditionalChars, Charset );
             _bruteForceBatches.Initialize();
 
             // Load kernel (GPU function)
