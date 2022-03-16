@@ -4,7 +4,7 @@
 This tool is a PowerShell module that can be used to brute force Blizzard MPQ archives' name hashes.  
 This has been successfully tested on:
 - Windows 10 x64
-- PowerShell 7.1 x64
+- PowerShell 7.2 x64
 
 The tool also supports GPU accelerated name breaking.  
 It relies on the [ILGPU](http://www.ilgpu.net) library.
@@ -33,10 +33,12 @@ It can be extended with the `-AdditionalChars` parameter, or overridden with the
 
 ```powershell
 # Name breaking without suffix but with additional "." character for "monsters\mega\balr.trn"
-Invoke-MpqNameBreaking -HashA 0x26BBF734u -HashB 0x2C785839u -Prefix 'MONSTERS\MEGA\' -AdditionalChars '.' -Verbose
+Invoke-MpqNameBreaking -HashA 0x26BBF734u -HashB 0x2C785839u `
+  -Prefix 'MONSTERS\MEGA\' -AdditionalChars '.' -Verbose
 
 # Name breaking with prefix, suffix and a custom charset containing only letters + "\" for "plrgfx\rogue\rls\rlsas.cl2"
-Invoke-MpqNameBreaking -HashA 0xCB636CF4u -HashB 0x7B3E6451u -Prefix 'plrgfx\rogue\r' -Charset 'ABCDEFGHIJKLMNOPQRSTUVWXYZ\' -Suffix '.cl2'  -Verbose
+Invoke-MpqNameBreaking -HashA 0xCB636CF4u -HashB 0x7B3E6451u `
+  -Prefix 'plrgfx\rogue\r' -Charset 'ABCDEFGHIJKLMNOPQRSTUVWXYZ\' -Suffix '.cl2'  -Verbose
 ```
 
 ## Build
