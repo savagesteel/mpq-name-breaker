@@ -137,15 +137,15 @@ namespace MpqNameBreaker
                     ArrayView<uint>,
                     ArrayView2D<int>,
                     ArrayView<byte>,
-                    uint,
-                    uint,
-                    uint,
-                    uint,
-                    uint,
-                    uint,
+                    SpecializedValue<uint>,
+                    SpecializedValue<uint>,
+                    SpecializedValue<uint>,
+                    SpecializedValue<uint>,
+                    SpecializedValue<uint>,
+                    SpecializedValue<uint>,
                     bool,
                     int,
-                    int,
+                    SpecializedValue<int>,
                     ArrayView<int>
                 >( Mpq.HashCalculatorAccelerated.HashStringsBatchOptimized );
 
@@ -245,9 +245,21 @@ namespace MpqNameBreaker
 
                 
                 // Call the kernel
-                kernel( charsetIndexesBuffer.Width, charsetBuffer.View, cryptTableBuffer.View,
-                    charsetIndexesBuffer.View, suffixBytesBuffer.View, HashA, HashB, prefixSeed1A, prefixSeed2A, prefixSeed1B, prefixSeed2B,
-                    _bruteForceBatches.FirstBatch, nameCount, BatchCharCount, foundNameCharsetIndexesBuffer.View );
+                kernel(charsetIndexesBuffer.Width,
+                       charsetBuffer.View,
+                       cryptTableBuffer.View,
+                       charsetIndexesBuffer.View,
+                       suffixBytesBuffer.View,
+                       SpecializedValue.New(HashA),
+                       SpecializedValue.New(HashB),
+                       SpecializedValue.New(prefixSeed1A),
+                       SpecializedValue.New(prefixSeed2A),
+                       SpecializedValue.New(prefixSeed1B),
+                       SpecializedValue.New(prefixSeed2B),
+                       _bruteForceBatches.FirstBatch,
+                       nameCount,
+                       SpecializedValue.New(BatchCharCount),
+                       foundNameCharsetIndexesBuffer.View);
 
                 // Wait for the kernel to complete
                 _hashCalculatorAccelerated.Accelerator.Synchronize();
