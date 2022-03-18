@@ -64,7 +64,8 @@ namespace MpqNameBreaker.Mpq
         public void InitializeGpuAccelarator()
         {
             GPUContext = Context.Create(builder => {
-                builder.Optimize(OptimizationLevel.O2)
+                // Notes: OptimizationLevel.O2 is actually really slow, not sure how to leverage it better if at all.
+                builder.Optimize(OptimizationLevel.Release)
                 .Inlining(InliningMode.Aggressive)
                 .AllAccelerators()
                 .OpenCL()
