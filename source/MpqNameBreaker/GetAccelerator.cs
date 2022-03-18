@@ -1,11 +1,8 @@
-﻿using System;
-using System.Text;
-using System.Diagnostics;
+﻿using System.Linq;
 using System.Management.Automation;
-using System.Management.Automation.Runspaces;
-using MpqNameBreaker.Mpq;
 using ILGPU;
-using ILGPU.Runtime;
+using ILGPU.Runtime.Cuda;
+using ILGPU.Runtime.OpenCL;
 
 namespace MpqNameBreaker
 {
@@ -21,20 +18,15 @@ namespace MpqNameBreaker
         // This method will be called for each input received from the pipeline to this cmdlet; if no input is received, this method is not called
         protected override void ProcessRecord()
         {
-            var context = new Context();
+            var context = Context.Create(builder =>
+            {
+                builder.AllAccelerators()
+                .Cuda()
+                .OpenCL();
+            });
 
             // For each available accelerator...
-            int id = 0;
-            foreach( var acceleratorId in Accelerator.Accelerators )
-            {
-                var accelerator = Accelerator.Create( context, acceleratorId );
-
-                // Output the accelerator information
-                WriteObject( new {Id = id, Name = accelerator.Name, 
-                    Type = acceleratorId.AcceleratorType, MaxNumThreads = accelerator.MaxNumThreads} );
-                
-                id++;
-            }
+            context.Devices.ToList().ForEach(WriteObject);
         }
 
         // This method will be called once at the end of pipeline execution; if no input is received, this method is not called
