@@ -30,12 +30,6 @@ namespace MpqNameBreaker.Mpq
             InitializeGpuAccelarator();
         }
 
-        /*public HashCalculatorAccelerated( int acceleratorId )
-        { 
-            InitializeCryptTable();
-            InitializeGpuAccelarator( acceleratorId );
-        }*/
-
         // Methods
         public void InitializeCryptTable()
         {
@@ -81,12 +75,6 @@ namespace MpqNameBreaker.Mpq
             Accelerator = bestDevice.CreateAccelerator(GPUContext);
         }
 
-        /*public void InitializeGpuAccelarator( int acceleratorId )
-        {
-            GPUContext = Context.CreateDefault();
-            // TODO?
-        }*/
-
         public static void MyKernel(
             Index1D index,              // The global thread index (1D in this case)
             ArrayView<int> dataView,   // A view to a chunk of memory (1D in this case)
@@ -115,7 +103,7 @@ namespace MpqNameBreaker.Mpq
             SpecializedValue<uint> prefixSeed2a,    // Pre-computed hash A seed 2 for the string prefix
             SpecializedValue<uint> prefixSeed1b,    // Pre-computed hash B seed 1 for the string prefix
             SpecializedValue<uint> prefixSeed2b,    // Pre-computed hash B seed 2 for the string prefix
-            bool firstBatch,
+            SpecializedValue<bool> firstBatch,
             int nameCount,                          // Name count limit (used as return condition)
             SpecializedValue<int> batchCharCount,   // MAX = 8          // Number of generated chars in the batch
             ArrayView<int> foundNameCharsetIndexes  // 1D array containing the found name (if found)

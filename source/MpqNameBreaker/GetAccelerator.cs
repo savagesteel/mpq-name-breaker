@@ -1,4 +1,5 @@
-﻿using System.Management.Automation;
+﻿using System.Linq;
+using System.Management.Automation;
 using ILGPU;
 using ILGPU.Runtime.Cuda;
 using ILGPU.Runtime.OpenCL;
@@ -25,10 +26,7 @@ namespace MpqNameBreaker
             });
 
             // For each available accelerator...
-            foreach(var device in context)
-            {
-                WriteObject(device);
-            }
+            context.Devices.ToList().ForEach(WriteObject);
         }
 
         // This method will be called once at the end of pipeline execution; if no input is received, this method is not called

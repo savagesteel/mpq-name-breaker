@@ -52,14 +52,6 @@ namespace MpqNameBreaker
         [AllowEmptyString()]
         public string Charset { get; set; } = BruteForceBatches.DefaultCharset;
 
-        /*
-        [Parameter(
-            Mandatory = false,
-            Position = 1,
-            ValueFromPipelineByPropertyName = true)]
-        public int AcceleratorId { get; set; }
-        */
-
         [Parameter(
             Mandatory = false,
             Position = 1,
@@ -121,7 +113,6 @@ namespace MpqNameBreaker
 
             // Initialize GPU hash calculator
             _hashCalculatorAccelerated = new HashCalculatorAccelerated();
-
             PrintDeviceInfo(_hashCalculatorAccelerated);
 
             // Define the batch size to MaxNumThreads of the accelerator if no custom value has been provided
@@ -154,7 +145,7 @@ namespace MpqNameBreaker
                     SpecializedValue<uint>,
                     SpecializedValue<uint>,
                     SpecializedValue<uint>,
-                    bool,
+                    SpecializedValue<bool>,
                     int,
                     SpecializedValue<int>,
                     ArrayView<int>
@@ -195,13 +186,13 @@ namespace MpqNameBreaker
 
             // MAIN
 
-            WriteVerbose( "Accelerator: " + _hashCalculatorAccelerated.Accelerator.Name 
-                + " (threads: " + _hashCalculatorAccelerated.Accelerator.MaxNumThreads + ")" );
-            WriteVerbose( "Batch size: " + BatchSize + ", " + BatchCharCount );
-            WriteVerbose( "Charset: " + _bruteForceBatches.Charset );
+            WriteVerbose($"Accelerator: {_hashCalculatorAccelerated.Accelerator.Name}"
+                + $" (threads: {_hashCalculatorAccelerated.Accelerator.MaxNumThreads})");
+            WriteVerbose($"Batch size: {BatchSize}, {BatchCharCount}");
+            WriteVerbose("Charset: " + _bruteForceBatches.Charset);
 
             DateTime start = DateTime.Now;
-            WriteVerbose( "Start: " + start.ToString("HH:mm:ss.fff") ); 
+            WriteVerbose($"Start: {start:HH:mm:ss.fff}");
 
             double billionCount = 0;
             double tempCount = 0;
@@ -223,7 +214,7 @@ namespace MpqNameBreaker
                        SpecializedValue.New(prefixSeed2A),
                        SpecializedValue.New(prefixSeed1B),
                        SpecializedValue.New(prefixSeed2B),
-                       _bruteForceBatches.FirstBatch,
+                       SpecializedValue.New(_bruteForceBatches.FirstBatch),
                        nameCount,
                        SpecializedValue.New(BatchCharCount),
                        foundNameCharsetIndexesBuffer.View);
@@ -248,10 +239,10 @@ namespace MpqNameBreaker
                         foundName += Convert.ToChar( _bruteForceBatches.CharsetBytes[ idx ] );
                     }
 
-                    WriteVerbose( "End: " + DateTime.Now.ToString("HH:mm:ss.fff") );
+                    WriteVerbose($"End: {DateTime.Now:HH:mm:ss.fff}");
                     TimeSpan elapsed = DateTime.Now - start;
-                    WriteVerbose( "Elapsed: " + elapsed.ToString() );
-                    WriteVerbose( "Name found! " );
+                    WriteVerbose($"Elapsed: {elapsed}");
+                    WriteVerbose("Name found! ");
                     WriteObject( Prefix.ToUpper() + foundName + Suffix.ToUpper() );
 
                     return;
@@ -275,7 +266,7 @@ namespace MpqNameBreaker
                         lastName += Convert.ToChar( _bruteForceBatches.CharsetBytes[ idx ] );
                     }
 
-                    WriteVerbose( String.Format("Elapsed time: {0} - Name: {1} - Name count: {2:N0} billion", elapsed.ToString(), Prefix.ToUpper()+lastName+Suffix.ToUpper(), billionCount) );
+                    WriteVerbose($"Elapsed time: {elapsed} - Name: {Prefix.ToUpper() + lastName + Suffix.ToUpper()} - Name count: {billionCount:N0} billion");
                 }
                 
             }
