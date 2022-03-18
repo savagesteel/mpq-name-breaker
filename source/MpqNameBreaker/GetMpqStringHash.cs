@@ -7,7 +7,7 @@ using MpqNameBreaker.Mpq;
 
 namespace MpqNameBreaker
 {
-    [Cmdlet(VerbsCommon.Get,"MpqStringHash")]
+    [Cmdlet(VerbsCommon.Get, "MpqStringHash")]
     [OutputType(typeof(uint))]
     public class GetMpqStringHashCommand : PSCmdlet
     {
@@ -23,7 +23,7 @@ namespace MpqNameBreaker
             Position = 1,
             ValueFromPipelineByPropertyName = true)]
         public HashType Type { get; set; }
-  
+
         // Fields
         private HashCalculator _hashCalculator;
 
@@ -45,12 +45,12 @@ namespace MpqNameBreaker
             // Convert string to uppercase
             strUpper = String.ToUpper();
             // Get ASCII chars
-            strBytes = Encoding.ASCII.GetBytes( strUpper );
+            strBytes = Encoding.ASCII.GetBytes(strUpper);
             // Compute hash
-            hash = _hashCalculator.HashString( strBytes, Type );
+            hash = _hashCalculator.HashString(strBytes, Type);
 
             // Output hash to console
-            WriteObject( hash );
+            WriteObject(hash);
         }
 
         // This method will be called once at the end of pipeline execution; if no input is received, this method is not called

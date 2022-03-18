@@ -8,7 +8,7 @@ using ILGPU.Runtime;
 
 namespace MpqNameBreaker
 {
-    [Cmdlet(VerbsLifecycle.Invoke,"MpqNameBreaking")]
+    [Cmdlet(VerbsLifecycle.Invoke, "MpqNameBreaking")]
     [OutputType(typeof(string))]
     public class InvokeMpqNameBreakingCommand : PSCmdlet
     {
@@ -93,15 +93,15 @@ namespace MpqNameBreaker
             uint prefixSeed1A, prefixSeed2A, prefixSeed1B, prefixSeed2B;
 
             // Initialize brute force name generator
-            _bruteForce = new BruteForce( Prefix, Suffix );
+            _bruteForce = new BruteForce(Prefix, Suffix);
             _bruteForce.Initialize();
 
             // Initialize classic CPU hash calculator and pre-calculate prefix seeds
             _hashCalculator = new HashCalculator();
-            if( Prefix.Length > 0 )
+            if (Prefix.Length > 0)
             {
-                (prefixSeed1A, prefixSeed2A) = _hashCalculator.HashStringOptimizedCalculateSeeds( _bruteForce.PrefixBytes, HashType.MpqHashNameA );
-                (prefixSeed1B, prefixSeed2B) = _hashCalculator.HashStringOptimizedCalculateSeeds( _bruteForce.PrefixBytes, HashType.MpqHashNameB );
+                (prefixSeed1A, prefixSeed2A) = _hashCalculator.HashStringOptimizedCalculateSeeds(_bruteForce.PrefixBytes, HashType.MpqHashNameA);
+                (prefixSeed1B, prefixSeed2B) = _hashCalculator.HashStringOptimizedCalculateSeeds(_bruteForce.PrefixBytes, HashType.MpqHashNameB);
             }
             else
             {
@@ -116,24 +116,24 @@ namespace MpqNameBreaker
             PrintDeviceInfo(_hashCalculatorAccelerated);
 
             // Define the batch size to MaxNumThreads of the accelerator if no custom value has been provided
-            if( !this.MyInvocation.BoundParameters.ContainsKey("BatchSize") )
+            if (!this.MyInvocation.BoundParameters.ContainsKey("BatchSize"))
                 BatchSize = _hashCalculatorAccelerated.Accelerator.MaxNumThreads;
 
-            if( !this.MyInvocation.BoundParameters.ContainsKey("BatchCharCount") )
+            if (!this.MyInvocation.BoundParameters.ContainsKey("BatchCharCount"))
             {
-                if( _hashCalculatorAccelerated.Accelerator.MaxNumThreads < 1024 )
+                if (_hashCalculatorAccelerated.Accelerator.MaxNumThreads < 1024)
                     BatchCharCount = 3;
                 else
                     BatchCharCount = 4;
             }
 
             // Initialize brute force batches name generator
-            _bruteForceBatches = new BruteForceBatches( BatchSize, BatchCharCount, AdditionalChars, Charset );
+            _bruteForceBatches = new BruteForceBatches(BatchSize, BatchCharCount, AdditionalChars, Charset);
             _bruteForceBatches.Initialize();
 
             // Load kernel (GPU function)
             // This function will calculate HashA for each name of a batch and report matches/collisions
-            var kernel = _hashCalculatorAccelerated.Accelerator.LoadAutoGroupedStreamKernel< 
+            var kernel = _hashCalculatorAccelerated.Accelerator.LoadAutoGroupedStreamKernel<
                     Index1D,
                     ArrayView<byte>,
                     ArrayView<uint>,
@@ -149,20 +149,20 @@ namespace MpqNameBreaker
                     int,
                     int,
                     ArrayView<int>
-                >( Mpq.HashCalculatorAccelerated.HashStringsBatchOptimized );
+                >(Mpq.HashCalculatorAccelerated.HashStringsBatchOptimized);
 
             // Prepare data for the kernel
-            var charsetBuffer = _hashCalculatorAccelerated.Accelerator.Allocate1D( _bruteForceBatches.CharsetBytes );
+            var charsetBuffer = _hashCalculatorAccelerated.Accelerator.Allocate1D(_bruteForceBatches.CharsetBytes);
 
-            var charsetIndexesBuffer = _hashCalculatorAccelerated.Accelerator.Allocate2DDenseX<int>( new Index2D(BatchSize, BruteForceBatches.MaxGeneratedChars) );
+            var charsetIndexesBuffer = _hashCalculatorAccelerated.Accelerator.Allocate2DDenseX<int>(new Index2D(BatchSize, BruteForceBatches.MaxGeneratedChars));
 
             // Suffix processing
             int suffixLength;
             byte[] suffixBytes;
-            if( Suffix.Length > 0 )
+            if (Suffix.Length > 0)
             {
                 suffixLength = Suffix.Length;
-                suffixBytes = Encoding.ASCII.GetBytes( Suffix.ToUpper() );
+                suffixBytes = Encoding.ASCII.GetBytes(Suffix.ToUpper());
             }
             else
             {
@@ -174,11 +174,11 @@ namespace MpqNameBreaker
 
             var cryptTableBuffer = _hashCalculatorAccelerated.Accelerator.Allocate1D(_hashCalculatorAccelerated.CryptTable);
 
-            int nameCount = (int)Math.Pow( _bruteForceBatches.Charset.Length, BatchCharCount );
+            int nameCount = (int)Math.Pow(_bruteForceBatches.Charset.Length, BatchCharCount);
 
             // fill result array with -1
-            int[] foundNameCharsetIndexes = new int[BruteForceBatches.MaxGeneratedChars]; 
-            for( int i = 0; i < BruteForceBatches.MaxGeneratedChars; ++i )
+            int[] foundNameCharsetIndexes = new int[BruteForceBatches.MaxGeneratedChars];
+            for (int i = 0; i < BruteForceBatches.MaxGeneratedChars; ++i)
                 foundNameCharsetIndexes[i] = -1;
 
             var foundNameCharsetIndexesBuffer = _hashCalculatorAccelerated.Accelerator.Allocate1D(foundNameCharsetIndexes);
@@ -196,9 +196,9 @@ namespace MpqNameBreaker
 
             double billionCount = 0;
             double tempCount = 0;
-            double oneBatchBillionCount = ( Math.Pow(_bruteForceBatches.Charset.Length, BatchCharCount) * BatchSize ) / 1_000_000_000;
+            double oneBatchBillionCount = (Math.Pow(_bruteForceBatches.Charset.Length, BatchCharCount) * BatchSize) / 1_000_000_000;
 
-            while ( _bruteForceBatches.NextBatch() )
+            while (_bruteForceBatches.NextBatch())
             {
                 // Copy char indexes to buffer
                 charsetIndexesBuffer.CopyFromCPU(_bruteForceBatches.BatchNameSeedCharsetIndexes);
@@ -226,50 +226,50 @@ namespace MpqNameBreaker
                 // If name was found
                 foundNameCharsetIndexes = foundNameCharsetIndexesBuffer.GetAsArray1D();
 
-                if( foundNameCharsetIndexes[0] != -1 )
+                if (foundNameCharsetIndexes[0] != -1)
                 {
                     byte[] str = new byte[BruteForceBatches.MaxGeneratedChars];
 
-                    for( int i = 0; i < BruteForceBatches.MaxGeneratedChars; ++i )
+                    for (int i = 0; i < BruteForceBatches.MaxGeneratedChars; ++i)
                     {
                         int idx = foundNameCharsetIndexes[i];
-                        
-                        if( idx == -1 )
+
+                        if (idx == -1)
                             break;
 
-                        foundName += Convert.ToChar( _bruteForceBatches.CharsetBytes[ idx ] );
+                        foundName += Convert.ToChar(_bruteForceBatches.CharsetBytes[idx]);
                     }
 
                     WriteVerbose($"End: {DateTime.Now:HH:mm:ss.fff}");
                     TimeSpan elapsed = DateTime.Now - start;
                     WriteVerbose($"Elapsed: {elapsed}");
                     WriteVerbose("Name found! ");
-                    WriteObject( Prefix.ToUpper() + foundName + Suffix.ToUpper() );
+                    WriteObject(Prefix.ToUpper() + foundName + Suffix.ToUpper());
 
                     return;
                 }
 
                 // Display statistics
                 billionCount += oneBatchBillionCount;
-                if( tempCount < billionCount )
+                if (tempCount < billionCount)
                 {
                     tempCount = billionCount + 1;
                     TimeSpan elapsed = DateTime.Now - start;
 
                     string lastName = "";
-                    for( int i = 0; i < BruteForceBatches.MaxGeneratedChars; i++ )
+                    for (int i = 0; i < BruteForceBatches.MaxGeneratedChars; i++)
                     {
-                        int idx = _bruteForceBatches.BatchNameSeedCharsetIndexes[ BatchSize-1, i ];
+                        int idx = _bruteForceBatches.BatchNameSeedCharsetIndexes[BatchSize - 1, i];
 
-                        if( idx == -1 )
+                        if (idx == -1)
                             break;
 
-                        lastName += Convert.ToChar( _bruteForceBatches.CharsetBytes[ idx ] );
+                        lastName += Convert.ToChar(_bruteForceBatches.CharsetBytes[idx]);
                     }
 
                     WriteVerbose($"Elapsed time: {elapsed} - Name: {Prefix.ToUpper() + lastName + Suffix.ToUpper()} - Name count: {billionCount:N0} billion");
                 }
-                
+
             }
 
         }

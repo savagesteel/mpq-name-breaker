@@ -15,7 +15,7 @@ namespace MpqNameBreaker.Mpq
         const uint HashSeed2 = 0xEEEEEEEE;
 
         // Properties
-        public uint[] CryptTable {get; private set;}
+        public uint[] CryptTable { get; private set; }
 
         // Fields
 
@@ -37,24 +37,24 @@ namespace MpqNameBreaker.Mpq
             CryptTable = new uint[CryptTableSize];
 
             // Go through all the cells of the array
-            for( index1 = 0; index1 < 0x100; index1++ )
+            for (index1 = 0; index1 < 0x100; index1++)
             {
-                for( index2 = index1, i = 0; i < 5; i++, index2 += 0x100 )
+                for (index2 = index1, i = 0; i < 5; i++, index2 += 0x100)
                 {
                     uint temp1, temp2;
 
                     seed = (seed * 125 + 3) % 0x2AAAAB;
-                    temp1  = (seed & 0xFFFF) << 0x10;
+                    temp1 = (seed & 0xFFFF) << 0x10;
 
                     seed = (seed * 125 + 3) % 0x2AAAAB;
-                    temp2  = (seed & 0xFFFF);
+                    temp2 = (seed & 0xFFFF);
 
                     CryptTable[index2] = (temp1 | temp2);
                 }
             }
         }
 
-        public uint HashString( byte[] str, HashType hashType )
+        public uint HashString(byte[] str, HashType hashType)
         {
             uint seed1 = HashSeed1;
             uint seed2 = HashSeed2;
@@ -62,7 +62,7 @@ namespace MpqNameBreaker.Mpq
 
             int type = (int)hashType;
 
-            for( int i = 0; i < str.Length; i++ )
+            for (int i = 0; i < str.Length; i++)
             {
                 ch = str[i];
                 seed1 = CryptTable[type + ch] ^ (seed1 + seed2);
@@ -73,7 +73,7 @@ namespace MpqNameBreaker.Mpq
         }
 
 
-        public (uint, uint) HashStringOptimizedCalculateSeeds( byte[] str, HashType hashType )
+        public (uint, uint) HashStringOptimizedCalculateSeeds(byte[] str, HashType hashType)
         {
             uint seed1 = HashSeed1;
             uint seed2 = HashSeed2;
@@ -81,7 +81,7 @@ namespace MpqNameBreaker.Mpq
 
             int type = (int)hashType;
 
-            for( int i = 0; i < str.Length; i++ )
+            for (int i = 0; i < str.Length; i++)
             {
                 ch = str[i];
                 seed1 = CryptTable[type + ch] ^ (seed1 + seed2);
@@ -92,13 +92,13 @@ namespace MpqNameBreaker.Mpq
         }
 
         // Call HashStringOptimizedCalculateSeeds before this method
-        public uint HashStringOptimized( byte[] str, HashType hashType, int prefixLength, uint seed1, uint seed2 )
+        public uint HashStringOptimized(byte[] str, HashType hashType, int prefixLength, uint seed1, uint seed2)
         {
             uint ch;
 
             int type = (int)hashType;
 
-            for( int i = prefixLength; i < str.Length; i++ )
+            for (int i = prefixLength; i < str.Length; i++)
             {
                 ch = str[i];
                 seed1 = CryptTable[type + ch] ^ (seed1 + seed2);

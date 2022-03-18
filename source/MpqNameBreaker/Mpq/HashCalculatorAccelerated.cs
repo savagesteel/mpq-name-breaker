@@ -8,21 +8,21 @@ namespace MpqNameBreaker.Mpq
 {
     public class HashCalculatorAccelerated
     {
-                // Constants
+        // Constants
         public const uint CryptTableSize = 0x500;
         public const uint CryptTableSeed = 0x00100001;
         public const uint HashSeed1 = 0x7FED7FED;
         public const uint HashSeed2 = 0xEEEEEEEE;
 
         // Properties
-        public uint[] CryptTable {get; private set;}
+        public uint[] CryptTable { get; private set; }
 
-        public Accelerator Accelerator {get; private set;}
+        public Accelerator Accelerator { get; private set; }
         public Context GPUContext { get; private set; }
 
         // Constructors
         public HashCalculatorAccelerated()
-        { 
+        {
             InitializeCryptTable();
             InitializeGpuAccelarator();
         }
@@ -38,17 +38,17 @@ namespace MpqNameBreaker.Mpq
             CryptTable = new uint[CryptTableSize];
 
             // Go through all the cells of the array
-            for( index1 = 0; index1 < 0x100; index1++ )
+            for (index1 = 0; index1 < 0x100; index1++)
             {
-                for( index2 = index1, i = 0; i < 5; i++, index2 += 0x100 )
+                for (index2 = index1, i = 0; i < 5; i++, index2 += 0x100)
                 {
                     uint temp1, temp2;
 
                     seed = (seed * 125 + 3) % 0x2AAAAB;
-                    temp1  = (seed & 0xFFFF) << 0x10;
+                    temp1 = (seed & 0xFFFF) << 0x10;
 
                     seed = (seed * 125 + 3) % 0x2AAAAB;
-                    temp2  = (seed & 0xFFFF);
+                    temp2 = (seed & 0xFFFF);
 
                     CryptTable[index2] = (temp1 | temp2);
                 }
@@ -57,7 +57,8 @@ namespace MpqNameBreaker.Mpq
 
         public void InitializeGpuAccelarator()
         {
-            GPUContext = Context.Create(builder => {
+            GPUContext = Context.Create(builder =>
+            {
                 // Notes: OptimizationLevel.O2 is actually really slow, not sure how to leverage it better if at all.
                 builder.Optimize(OptimizationLevel.O1)
                 .AllAccelerators()
@@ -97,7 +98,7 @@ namespace MpqNameBreaker.Mpq
             int typeB = 0x200; // Hash type B
 
             bool suffix = true;
-            if( suffixBytes[0] == 0 )
+            if (suffixBytes[0] == 0)
                 suffix = false;
 
             // Hash precalculated seeds (after prefix)
@@ -109,32 +110,32 @@ namespace MpqNameBreaker.Mpq
 
             // Brute force increment preparation
             // Increase name count to !numChars-1 for first batch first name seed
-            if( firstBatch && index == 0 )
+            if (firstBatch && index == 0)
             {
                 nameCount = -1;
-                for( int i = 1; i <= batchCharCount; ++i )
+                for (int i = 1; i <= batchCharCount; ++i)
                 {
                     int temp = 1;
 
-                    for( int j = 0; j < i; j++ )
+                    for (int j = 0; j < i; j++)
                         temp *= (int)charset.Length;
                     nameCount += temp;
 
-                    if( i == batchCharCount )
+                    if (i == batchCharCount)
                     {
                         temp = 1;
-                        for( int j = 0; j < i; j++ )
+                        for (int j = 0; j < i; j++)
                             temp *= (int)charset.Length;
                         nameCount += temp;
                     }
                 }
             }
-            
+
             // Find the position of the last generated char
-            for( int i = 0; i < charsetIndexes.Extent.Y; ++i )
+            for (int i = 0; i < charsetIndexes.Extent.Y; ++i)
             {
-                Index2D idx = new Index2D( index.X, i );
-                if( charsetIndexes[idx] == -1 )
+                Index2D idx = new Index2D(index.X, i);
+                if (charsetIndexes[idx] == -1)
                 {
                     generatedCharIndex = i - 1;
                     break;
@@ -142,22 +143,22 @@ namespace MpqNameBreaker.Mpq
             }
 
             // For each name compute hash
-            while( nameCount != 0 )
+            while (nameCount != 0)
             {
                 // Subsequent names
-                s1 = precalcSeeds1[ precalcSeedIndex ];
-                s2 = precalcSeeds2[ precalcSeedIndex ];
+                s1 = precalcSeeds1[precalcSeedIndex];
+                s2 = precalcSeeds2[precalcSeedIndex];
 
                 // Hash calculation
-                for( int i = precalcSeedIndex; i < charsetIndexes.Extent.Y; ++i )
+                for (int i = precalcSeedIndex; i < charsetIndexes.Extent.Y; ++i)
                 {
                     // Retrieve the current char of the string
-                    Index1D charsetIdx = charsetIndexes[new Index2D( index.X, i )];
+                    Index1D charsetIdx = charsetIndexes[new Index2D(index.X, i)];
 
-                    if( charsetIdx == -1 ) // break if end of the string is reached
+                    if (charsetIdx == -1) // break if end of the string is reached
                         break;
 
-                    ch = charset[ charsetIdx ];
+                    ch = charset[charsetIdx];
 
                     // Hash calculation                    
                     s1 = cryptTable[typeA + ch] ^ (s1 + s2);
@@ -165,7 +166,7 @@ namespace MpqNameBreaker.Mpq
 
                     // Store precalc seeds except if we are at the last character of the string
                     // (then it's not needed because this char changes constantly)
-                    if( i < generatedCharIndex )
+                    if (i < generatedCharIndex)
                     {
                         precalcSeedIndex++;
                         precalcSeeds1[precalcSeedIndex] = s1;
@@ -174,9 +175,9 @@ namespace MpqNameBreaker.Mpq
                 }
 
                 // Process suffix
-                if( suffix )
+                if (suffix)
                 {
-                    for( int i = 0; i < suffixBytes.Length; ++i )
+                    for (int i = 0; i < suffixBytes.Length; ++i)
                     {
                         // Retrieve current suffix char
                         ch = suffixBytes[i];
@@ -189,20 +190,20 @@ namespace MpqNameBreaker.Mpq
 
                 // Check if it matches the hash that we are looking for
                 // No precalculation because this is only executed on matches and collisions
-                if( s1 == hashALookup )
+                if (s1 == hashALookup)
                 {
                     s1 = prefixSeed1b;
                     s2 = prefixSeed2b;
 
-                    for( int i = 0; i < charsetIndexes.Extent.Y; ++i )
+                    for (int i = 0; i < charsetIndexes.Extent.Y; ++i)
                     {
                         // Retrieve the current char of the string
-                        Index1D charsetIdx = charsetIndexes[new Index2D( index.X, i )];
+                        Index1D charsetIdx = charsetIndexes[new Index2D(index.X, i)];
 
-                        if( charsetIdx == -1 ) // break if end of the string is reached
-                            break; 
+                        if (charsetIdx == -1) // break if end of the string is reached
+                            break;
 
-                        ch = charset[ charsetIdx ];
+                        ch = charset[charsetIdx];
 
                         // Hash calculation                    
                         s1 = cryptTable[typeB + ch] ^ (s1 + s2);
@@ -210,9 +211,9 @@ namespace MpqNameBreaker.Mpq
                     }
 
                     // Process suffix
-                    if( suffix )
+                    if (suffix)
                     {
-                        for( int i = 0; i < suffixBytes.Length; ++i )
+                        for (int i = 0; i < suffixBytes.Length; ++i)
                         {
                             // Retrieve current suffix char
                             ch = suffixBytes[i];
@@ -223,11 +224,11 @@ namespace MpqNameBreaker.Mpq
                         }
                     }
 
-                    if( s1 == hashBLookup )
+                    if (s1 == hashBLookup)
                     {
                         // Populate foundNameCharsetIndexes and return
-                        for( int i = 0; i < charsetIndexes.Extent.Y; ++i )
-                            foundNameCharsetIndexes[i] = charsetIndexes[new Index2D( index.X, i )];
+                        for (int i = 0; i < charsetIndexes.Extent.Y; ++i)
+                            foundNameCharsetIndexes[i] = charsetIndexes[new Index2D(index.X, i)];
 
                         return;
                     }
@@ -236,30 +237,30 @@ namespace MpqNameBreaker.Mpq
 
                 // Move to next name in the batch (brute force increment)
                 // If we are AT the last char of the charset
-                if( charsetIndexes[new Index2D( index.X, generatedCharIndex )] == charset.Length-1 )
+                if (charsetIndexes[new Index2D(index.X, generatedCharIndex)] == charset.Length - 1)
                 {
                     bool increaseNameSize = false;
 
                     // Go through all the charset indexes in reverse order
                     int stopValue = generatedCharIndex - batchCharCount + 1;
-                    if( firstBatch )
+                    if (firstBatch)
                         stopValue = 0;
 
-                    for( int i = generatedCharIndex; i >= stopValue; --i )
+                    for (int i = generatedCharIndex; i >= stopValue; --i)
                     {
                         // Retrieve the current char of the string
-                        Index2D idx = new Index2D( index.X, i );
+                        Index2D idx = new Index2D(index.X, i);
 
                         // If we are at the last char of the charset then go back to the first char
-                        if( charsetIndexes[idx] == charset.Length-1 )
+                        if (charsetIndexes[idx] == charset.Length - 1)
                         {
                             charsetIndexes[idx] = 0;
-                            
-                            if( i == 0 )
+
+                            if (i == 0)
                                 increaseNameSize = true;
 
                             // Go back in the precalc seeds (to recalculate since the char changed)
-                            if( precalcSeedIndex > 0 )
+                            if (precalcSeedIndex > 0)
                                 precalcSeedIndex--;
                         }
                         // If we are not at the last char of the charset then move to next char
@@ -270,18 +271,18 @@ namespace MpqNameBreaker.Mpq
                         }
                     }
 
-                    if( increaseNameSize )
+                    if (increaseNameSize)
                     {
                         // Increase name size by one char
                         generatedCharIndex++;
-                        charsetIndexes[new Index2D( index.X, generatedCharIndex )] = 0;
+                        charsetIndexes[new Index2D(index.X, generatedCharIndex)] = 0;
                     }
                 }
                 // If the generated char is within the charset
                 else
                 {
                     // Move to next char
-                    charsetIndexes[new Index2D( index.X, generatedCharIndex )]++;
+                    charsetIndexes[new Index2D(index.X, generatedCharIndex)]++;
                 }
 
                 nameCount--;

@@ -6,7 +6,7 @@ using ILGPU.Runtime.OpenCL;
 
 namespace MpqNameBreaker
 {
-    [Cmdlet(VerbsCommon.Get,"Accelerator")]
+    [Cmdlet(VerbsCommon.Get, "Accelerator")]
     [OutputType(typeof(uint))]
     public class GetAcceleratorCommand : PSCmdlet
     {
