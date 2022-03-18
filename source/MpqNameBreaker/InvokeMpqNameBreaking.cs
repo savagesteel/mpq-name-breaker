@@ -115,8 +115,8 @@ namespace MpqNameBreaker
             _hashCalculatorAccelerated = new HashCalculatorAccelerated();
             PrintDeviceInfo(_hashCalculatorAccelerated);
 
-            // Define the batch size to MaxNumThreads * 1.5 of the accelerator if no custom value has been provided
-            if ( !this.MyInvocation.BoundParameters.ContainsKey("BatchSize") )
+            // Define the batch size to MaxNumThreads of the accelerator if no custom value has been provided
+            if( !this.MyInvocation.BoundParameters.ContainsKey("BatchSize") )
                 BatchSize = _hashCalculatorAccelerated.Accelerator.MaxNumThreads;
 
             if( !this.MyInvocation.BoundParameters.ContainsKey("BatchCharCount") )
@@ -139,15 +139,15 @@ namespace MpqNameBreaker
                     ArrayView<uint>,
                     ArrayView2D<int, Stride2D.DenseX>,
                     ArrayView<byte>,
-                    SpecializedValue<uint>,
-                    SpecializedValue<uint>,
-                    SpecializedValue<uint>,
-                    SpecializedValue<uint>,
-                    SpecializedValue<uint>,
-                    SpecializedValue<uint>,
-                    SpecializedValue<bool>,
+                    uint,
+                    uint,
+                    uint,
+                    uint,
+                    uint,
+                    uint,
+                    bool,
                     int,
-                    SpecializedValue<int>,
+                    int,
                     ArrayView<int>
                 >( Mpq.HashCalculatorAccelerated.HashStringsBatchOptimized );
 
@@ -198,14 +198,6 @@ namespace MpqNameBreaker
             double tempCount = 0;
             double oneBatchBillionCount = ( Math.Pow(_bruteForceBatches.Charset.Length, BatchCharCount) * BatchSize ) / 1_000_000_000;
 
-            var spHashA = SpecializedValue.New(HashA);
-            var spHashB = SpecializedValue.New(HashB);
-            var spPrefixSeed1A = SpecializedValue.New(prefixSeed1A);
-            var spPrefixSeed2A = SpecializedValue.New(prefixSeed2A);
-            var spPrefixSeed1B = SpecializedValue.New(prefixSeed1B);
-            var spPrefixSeed2B = SpecializedValue.New(prefixSeed2B);
-            var spBatchCharCount = SpecializedValue.New(BatchCharCount);
-
             while ( _bruteForceBatches.NextBatch() )
             {
                 // Copy char indexes to buffer
@@ -217,15 +209,15 @@ namespace MpqNameBreaker
                        cryptTableBuffer.View,
                        charsetIndexesBuffer.View,
                        suffixBytesBuffer.View,
-                       spHashA,
-                       spHashB,
-                       spPrefixSeed1A,
-                       spPrefixSeed2A,
-                       spPrefixSeed1B,
-                       spPrefixSeed2B,
-                       SpecializedValue.New(_bruteForceBatches.FirstBatch),
+                       HashA,
+                       HashB,
+                       prefixSeed1A,
+                       prefixSeed2A,
+                       prefixSeed1B,
+                       prefixSeed2B,
+                       _bruteForceBatches.FirstBatch,
                        nameCount,
-                       spBatchCharCount,
+                       BatchCharCount,
                        foundNameCharsetIndexesBuffer.View);
 
                 // Wait for the kernel to complete

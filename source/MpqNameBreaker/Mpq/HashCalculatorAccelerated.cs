@@ -6,22 +6,19 @@ using System.Linq;
 
 namespace MpqNameBreaker.Mpq
 {
-    
     public class HashCalculatorAccelerated
     {
-        // Constants
-        public const uint CryptTableSize = 0x200;
+                // Constants
+        public const uint CryptTableSize = 0x500;
         public const uint CryptTableSeed = 0x00100001;
         public const uint HashSeed1 = 0x7FED7FED;
         public const uint HashSeed2 = 0xEEEEEEEE;
 
         // Properties
         public uint[] CryptTable {get; private set;}
+
+        public Accelerator Accelerator {get; private set;}
         public Context GPUContext { get; private set; }
-        public Accelerator Accelerator { get; private set; }
-
-        // Fields
-
 
         // Constructors
         public HashCalculatorAccelerated()
@@ -53,10 +50,7 @@ namespace MpqNameBreaker.Mpq
                     seed = (seed * 125 + 3) % 0x2AAAAB;
                     temp2  = (seed & 0xFFFF);
 
-                    if (index2 >= 0x100 && index2 < 0x300)
-                    {
-                        CryptTable[index2 - 0x100] = (temp1 | temp2);
-                    }
+                    CryptTable[index2] = (temp1 | temp2);
                 }
             }
         }
@@ -65,8 +59,7 @@ namespace MpqNameBreaker.Mpq
         {
             GPUContext = Context.Create(builder => {
                 // Notes: OptimizationLevel.O2 is actually really slow, not sure how to leverage it better if at all.
-                builder.Optimize(OptimizationLevel.Release)
-                .Inlining(InliningMode.Aggressive)
+                builder.Optimize(OptimizationLevel.O1)
                 .AllAccelerators()
                 .OpenCL()
                 .Cuda();
@@ -76,37 +69,21 @@ namespace MpqNameBreaker.Mpq
             Accelerator = bestDevice.CreateAccelerator(GPUContext);
         }
 
-        public static void MyKernel(
-            Index1D index,              // The global thread index (1D in this case)
-            ArrayView<int> dataView,   // A view to a chunk of memory (1D in this case)
-            int constant)              // A sample uniform constant
-        {
-            dataView[index] = index + constant;
-        }
-
-        public static void MyKernel2( Index1D index, ArrayView2D<byte, Stride2D.General> dataView )
-        {
-            for( int i = 0; i < dataView.Extent.Y; i++ )
-            {
-                dataView[new Index2D(index.X, i)] = (byte)i;
-            }
-        }
-
         public static void HashStringsBatchOptimized(
             Index1D index,
             ArrayView<byte> charset,                // 1D array holding the charset bytes
             ArrayView<uint> cryptTable,             // 1D array crypt table used for hash computation
             ArrayView2D<int, Stride2D.DenseX> charsetIndexes,        // 2D array containing the char indexes of one batch string seed (one string per line, hashes will be computed starting from this string)
             ArrayView<byte> suffixBytes,            // 1D array holding the indexes of the suffix chars
-            SpecializedValue<uint> hashALookup,     // The hash A that we are looking for
-            SpecializedValue<uint> hashBLookup,     // The hash B that we are looking for
-            SpecializedValue<uint> prefixSeed1a,    // Pre-computed hash A seed 1 for the string prefix
-            SpecializedValue<uint> prefixSeed2a,    // Pre-computed hash A seed 2 for the string prefix
-            SpecializedValue<uint> prefixSeed1b,    // Pre-computed hash B seed 1 for the string prefix
-            SpecializedValue<uint> prefixSeed2b,    // Pre-computed hash B seed 2 for the string prefix
-            SpecializedValue<bool> firstBatch,
+            uint hashALookup,                       // The hash A that we are looking for
+            uint hashBLookup,                       // The hash B that we are looking for
+            uint prefixSeed1a,                      // Pre-computed hash A seed 1 for the string prefix
+            uint prefixSeed2a,                      // Pre-computed hash A seed 2 for the string prefix
+            uint prefixSeed1b,                      // Pre-computed hash B seed 1 for the string prefix
+            uint prefixSeed2b,                      // Pre-computed hash B seed 2 for the string prefix
+            bool firstBatch,
             int nameCount,                          // Name count limit (used as return condition)
-            SpecializedValue<int> batchCharCount,   // MAX = 8          // Number of generated chars in the batch
+            int batchCharCount, // MAX = 8          // Number of generated chars in the batch
             ArrayView<int> foundNameCharsetIndexes  // 1D array containing the found name (if found)
         )
         {
@@ -116,8 +93,8 @@ namespace MpqNameBreaker.Mpq
             // Hash variables
             uint ch;           // Current char of the processed string
             uint s1, s2;       // Hash seeds
-            int typeA = 0;     // Hash type A
-            int typeB = 0x100; // Hash type B
+            int typeA = 0x100; // Hash type A
+            int typeB = 0x200; // Hash type B
 
             bool suffix = true;
             if( suffixBytes[0] == 0 )
