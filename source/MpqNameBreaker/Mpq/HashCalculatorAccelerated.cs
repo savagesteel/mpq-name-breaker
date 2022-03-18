@@ -160,7 +160,7 @@ namespace MpqNameBreaker.Mpq
 
                     ch = charset[charsetIdx];
 
-                    // Hash calculation                    
+                    // Hash calculation
                     s1 = cryptTable[typeA + ch] ^ (s1 + s2);
                     s2 = ch + s1 + s2 + (s2 << 5) + 3;
 

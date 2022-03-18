@@ -157,17 +157,14 @@ namespace MpqNameBreaker
             var charsetIndexesBuffer = _hashCalculatorAccelerated.Accelerator.Allocate2DDenseX<int>(new Index2D(BatchSize, BruteForceBatches.MaxGeneratedChars));
 
             // Suffix processing
-            int suffixLength;
             byte[] suffixBytes;
             if (Suffix.Length > 0)
             {
-                suffixLength = Suffix.Length;
                 suffixBytes = Encoding.ASCII.GetBytes(Suffix.ToUpper());
             }
             else
             {
-                suffixLength = 1;
-                suffixBytes = new byte[suffixLength];
+                suffixBytes = new byte[1];
                 suffixBytes[0] = 0x00;
             }
             var suffixBytesBuffer = _hashCalculatorAccelerated.Accelerator.Allocate1D(suffixBytes);
