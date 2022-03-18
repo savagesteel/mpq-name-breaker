@@ -52,11 +52,13 @@ namespace MpqNameBreaker
         [AllowEmptyString()]
         public string Charset { get; set; } = BruteForceBatches.DefaultCharset;
 
+        /*
         [Parameter(
             Mandatory = false,
             Position = 1,
             ValueFromPipelineByPropertyName = true)]
         public int AcceleratorId { get; set; }
+        */
 
         [Parameter(
             Mandatory = false,
@@ -81,6 +83,16 @@ namespace MpqNameBreaker
         // This method gets called once for each cmdlet in the pipeline when the pipeline starts executing
         protected override void BeginProcessing()
         {
+        }
+
+        private void PrintDeviceInfo(HashCalculatorAccelerated hashCalc)
+        {
+            WriteVerbose("Devices:");
+            foreach (var device in hashCalc.GPUContext)
+            {
+                string selected = hashCalc.Accelerator.Device == device ? "-->" : "";
+                WriteVerbose($"{selected}\t{device}");
+            }
         }
 
         // This method will be called for each input received from the pipeline to this cmdlet; if no input is received, this method is not called
@@ -108,13 +120,12 @@ namespace MpqNameBreaker
             }
 
             // Initialize GPU hash calculator
-            if( this.MyInvocation.BoundParameters.ContainsKey("AcceleratorId") )
-                _hashCalculatorAccelerated = new HashCalculatorAccelerated( AcceleratorId );
-            else
-                _hashCalculatorAccelerated = new HashCalculatorAccelerated();
+            _hashCalculatorAccelerated = new HashCalculatorAccelerated();
+
+            PrintDeviceInfo(_hashCalculatorAccelerated);
 
             // Define the batch size to MaxNumThreads of the accelerator if no custom value has been provided
-            if( !this.MyInvocation.BoundParameters.ContainsKey("BatchSize") )
+            if ( !this.MyInvocation.BoundParameters.ContainsKey("BatchSize") )
                 BatchSize = _hashCalculatorAccelerated.Accelerator.MaxNumThreads;
 
             if( !this.MyInvocation.BoundParameters.ContainsKey("BatchCharCount") )
@@ -132,10 +143,10 @@ namespace MpqNameBreaker
             // Load kernel (GPU function)
             // This function will calculate HashA for each name of a batch and report matches/collisions
             var kernel = _hashCalculatorAccelerated.Accelerator.LoadAutoGroupedStreamKernel< 
-                    Index1,
+                    Index1D,
                     ArrayView<byte>,
                     ArrayView<uint>,
-                    ArrayView2D<int>,
+                    ArrayView2D<int, Stride2D.DenseX>,
                     ArrayView<byte>,
                     SpecializedValue<uint>,
                     SpecializedValue<uint>,
@@ -150,46 +161,36 @@ namespace MpqNameBreaker
                 >( Mpq.HashCalculatorAccelerated.HashStringsBatchOptimized );
 
             // Prepare data for the kernel
-            var charsetBuffer = _hashCalculatorAccelerated.Accelerator.Allocate<byte>( _bruteForceBatches.CharsetBytes.Length );
-            charsetBuffer.CopyFrom( _bruteForceBatches.CharsetBytes, 0, 0, _bruteForceBatches.CharsetBytes.Length );
+            var charsetBuffer = _hashCalculatorAccelerated.Accelerator.Allocate1D( _bruteForceBatches.CharsetBytes );
 
-            var charsetIndexesBuffer = _hashCalculatorAccelerated.Accelerator.Allocate<int>( BatchSize, BruteForceBatches.MaxGeneratedChars );
+            var charsetIndexesBuffer = _hashCalculatorAccelerated.Accelerator.Allocate2DDenseX<int>( new Index2D(BatchSize, BruteForceBatches.MaxGeneratedChars) );
 
             // Suffix processing
-            bool suffix;
             int suffixLength;
             byte[] suffixBytes;
             if( Suffix.Length > 0 )
             {
-                suffix = true;
                 suffixLength = Suffix.Length;
                 suffixBytes = Encoding.ASCII.GetBytes( Suffix.ToUpper() );
             }
             else
             {
-                suffix = false;
                 suffixLength = 1;
                 suffixBytes = new byte[suffixLength];
                 suffixBytes[0] = 0x00;
             }
-            var suffixBytesBuffer = _hashCalculatorAccelerated.Accelerator.Allocate<byte>( suffixLength );
-            if( suffix )
-            {
-                suffixBytesBuffer.CopyFrom( suffixBytes, 0, 0, suffixLength );
-            }
+            var suffixBytesBuffer = _hashCalculatorAccelerated.Accelerator.Allocate1D(suffixBytes);
 
-
-            var cryptTableBuffer = _hashCalculatorAccelerated.Accelerator.Allocate<uint>(HashCalculatorAccelerated.CryptTableSize);
-            cryptTableBuffer.CopyFrom( _hashCalculatorAccelerated.CryptTable, 0, 0, _hashCalculatorAccelerated.CryptTable.Length );
+            var cryptTableBuffer = _hashCalculatorAccelerated.Accelerator.Allocate1D(_hashCalculatorAccelerated.CryptTable);
 
             int nameCount = (int)Math.Pow( _bruteForceBatches.Charset.Length, BatchCharCount );
 
             // fill result array with -1
-            var foundNameCharsetIndexesBuffer = _hashCalculatorAccelerated.Accelerator.Allocate<int>(BruteForceBatches.MaxGeneratedChars);
             int[] foundNameCharsetIndexes = new int[BruteForceBatches.MaxGeneratedChars]; 
             for( int i = 0; i < BruteForceBatches.MaxGeneratedChars; ++i )
                 foundNameCharsetIndexes[i] = -1;
-            foundNameCharsetIndexesBuffer.CopyFrom( foundNameCharsetIndexes, 0, 0, foundNameCharsetIndexesBuffer.Extent );
+
+            var foundNameCharsetIndexesBuffer = _hashCalculatorAccelerated.Accelerator.Allocate1D(foundNameCharsetIndexes);
             string foundName = "";
 
             // MAIN
@@ -207,45 +208,11 @@ namespace MpqNameBreaker
             double oneBatchBillionCount = ( Math.Pow(_bruteForceBatches.Charset.Length, BatchCharCount) * BatchSize ) / 1_000_000_000;
             while( _bruteForceBatches.NextBatch() )
             {
-                // Debug
-                //string[] names = _bruteForceBatches.BatchNames;
-                //string lastOfNames = names[names.Length-1];
-                //string[,] names = _bruteForceBatches3D.BatchNames;
-
                 // Copy char indexes to buffer
-                charsetIndexesBuffer.CopyFrom( 
-                    _bruteForceBatches.BatchNameSeedCharsetIndexes, Index2.Zero, Index2.Zero, charsetIndexesBuffer.Extent );
+                charsetIndexesBuffer.CopyFromCPU(_bruteForceBatches.BatchNameSeedCharsetIndexes);
 
-                // DEBUG: Inject a known name data in charsetIndexesBuffer to test the kernel
-                
-                /*
-                string testName = "AXE.CEL";
-                byte[] testNameBytes = Encoding.ASCII.GetBytes( testName.ToUpper() );
-                int[,] testNameIndexes = new int[1024,16];
-                int cIndex = 0;
-                for( int i = 0; i < 1024; i++ )
-                {
-                    for( int j = 0; j < 16; j++)
-                    {
-                        if( j < testName.Length )
-                            cIndex = BruteForceBatches.Charset.IndexOf(testName[j]);
-                        else
-                            cIndex = -1;
-
-                        testNameIndexes[i,j] = cIndex;
-                    }
-                }
-                charsetIndexesBuffer.CopyFrom( 
-                    testNameIndexes, Index2.Zero, Index2.Zero, charsetIndexesBuffer.Extent );
-                var test = charsetIndexesBuffer.GetAs2DArray();
-
-                var hash = _hashCalculator.HashString(Encoding.ASCII.GetBytes("ITEMS2\\AXE.CEL"),HashType.MpqHashNameA);
-                var hasho = _hashCalculator.HashStringOptimized(Encoding.ASCII.GetBytes("ITEMS2\\AXE.CEL"),HashType.MpqHashNameA,7,prefixSeed1A,prefixSeed2A);
-                */
-
-                
                 // Call the kernel
-                kernel(charsetIndexesBuffer.Width,
+                kernel((int)charsetIndexesBuffer.Extent.X,
                        charsetBuffer.View,
                        cryptTableBuffer.View,
                        charsetIndexesBuffer.View,
@@ -264,11 +231,8 @@ namespace MpqNameBreaker
                 // Wait for the kernel to complete
                 _hashCalculatorAccelerated.Accelerator.Synchronize();
 
-
-                //var test = charsetIndexesBuffer.GetAs2DArray();
-
                 // If name was found
-                foundNameCharsetIndexes = foundNameCharsetIndexesBuffer.GetAsArray();
+                foundNameCharsetIndexes = foundNameCharsetIndexesBuffer.GetAsArray1D();
 
                 if( foundNameCharsetIndexes[0] != -1 )
                 {

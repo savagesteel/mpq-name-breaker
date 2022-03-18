@@ -1,7 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
 using ILGPU;
 using ILGPU.Runtime;
+using ILGPU.Runtime.Cuda;
+using ILGPU.Runtime.OpenCL;
+using System.Linq;
 
 namespace MpqNameBreaker.Mpq
 {
@@ -16,8 +17,8 @@ namespace MpqNameBreaker.Mpq
 
         // Properties
         public uint[] CryptTable {get; private set;}
-
-        public Accelerator Accelerator {get; private set;}
+        public Context GPUContext { get; private set; }
+        public Accelerator Accelerator { get; private set; }
 
         // Fields
 
@@ -29,11 +30,11 @@ namespace MpqNameBreaker.Mpq
             InitializeGpuAccelarator();
         }
 
-        public HashCalculatorAccelerated( int acceleratorId )
+        /*public HashCalculatorAccelerated( int acceleratorId )
         { 
             InitializeCryptTable();
             InitializeGpuAccelarator( acceleratorId );
-        }
+        }*/
 
         // Methods
         public void InitializeCryptTable()
@@ -68,61 +69,45 @@ namespace MpqNameBreaker.Mpq
 
         public void InitializeGpuAccelarator()
         {
-            List<Accelerator> accelerators = new List<Accelerator>();
+            GPUContext = Context.Create(builder => {
+                builder.Optimize(OptimizationLevel.O2)
+                .Inlining(InliningMode.Aggressive)
+                .AllAccelerators()
+                .OpenCL()
+                .Cuda();
+            });
 
-            var context = new Context();
-            // Get all available accelerators
-            foreach( var acceleratorId in Accelerator.Accelerators )
-            {
-                accelerators.Add( 
-                    Accelerator.Create( context, acceleratorId ) );
-            }
-
-            // Select accelerator with the highest number of threads
-            Accelerator = accelerators.Aggregate(
-                (i1, i2) => i1.MaxNumThreads > i2.MaxNumThreads ? i1 : i2 );
+            Device bestDevice = GPUContext.Devices.OrderByDescending(device => device.MaxNumThreads).First();
+            Accelerator = bestDevice.CreateAccelerator(GPUContext);
         }
 
-        public void InitializeGpuAccelarator( int acceleratorId )
+        /*public void InitializeGpuAccelarator( int acceleratorId )
         {
-            var context = new Context();
-
-            // For each available accelerator...
-            int id = 0;
-            foreach( var a in Accelerator.Accelerators )
-            {
-                if( id == acceleratorId )
-                    Accelerator = Accelerator.Create( context, a );
-    
-                id++;
-            }
-
-            if( Accelerator == null )
-                throw new System.ArgumentException( "Accelerator ID not found." );
-
-        }
+            GPUContext = Context.CreateDefault();
+            // TODO?
+        }*/
 
         public static void MyKernel(
-            Index1 index,              // The global thread index (1D in this case)
+            Index1D index,              // The global thread index (1D in this case)
             ArrayView<int> dataView,   // A view to a chunk of memory (1D in this case)
             int constant)              // A sample uniform constant
         {
             dataView[index] = index + constant;
         }
 
-        public static void MyKernel2( Index1 index, ArrayView2D<byte> dataView )
+        public static void MyKernel2( Index1D index, ArrayView2D<byte, Stride2D.General> dataView )
         {
-            for( int i = 0; i < dataView.Height; i++ )
+            for( int i = 0; i < dataView.Extent.Y; i++ )
             {
-                dataView[new Index2(index.X, i)] = (byte)i;
+                dataView[new Index2D(index.X, i)] = (byte)i;
             }
         }
 
         public static void HashStringsBatchOptimized(
-            Index1 index,
+            Index1D index,
             ArrayView<byte> charset,                // 1D array holding the charset bytes
             ArrayView<uint> cryptTable,             // 1D array crypt table used for hash computation
-            ArrayView2D<int> charsetIndexes,        // 2D array containing the char indexes of one batch string seed (one string per line, hashes will be computed starting from this string)
+            ArrayView2D<int, Stride2D.DenseX> charsetIndexes,        // 2D array containing the char indexes of one batch string seed (one string per line, hashes will be computed starting from this string)
             ArrayView<byte> suffixBytes,            // 1D array holding the indexes of the suffix chars
             SpecializedValue<uint> hashALookup,     // The hash A that we are looking for
             SpecializedValue<uint> hashBLookup,     // The hash B that we are looking for
@@ -180,9 +165,9 @@ namespace MpqNameBreaker.Mpq
             }
             
             // Find the position of the last generated char
-            for( int i = 0; i < charsetIndexes.Height; ++i )
+            for( int i = 0; i < charsetIndexes.Extent.Y; ++i )
             {
-                Index2 idx = new Index2( index.X, i );
+                Index2D idx = new Index2D( index.X, i );
                 if( charsetIndexes[idx] == -1 )
                 {
                     generatedCharIndex = i - 1;
@@ -198,10 +183,10 @@ namespace MpqNameBreaker.Mpq
                 s2 = precalcSeeds2[ precalcSeedIndex ];
 
                 // Hash calculation
-                for( int i = precalcSeedIndex; i < charsetIndexes.Height; ++i )
+                for( int i = precalcSeedIndex; i < charsetIndexes.Extent.Y; ++i )
                 {
                     // Retrieve the current char of the string
-                    Index1 charsetIdx = charsetIndexes[new Index2( index.X, i )];
+                    Index1D charsetIdx = charsetIndexes[new Index2D( index.X, i )];
 
                     if( charsetIdx == -1 ) // break if end of the string is reached
                         break;
@@ -243,10 +228,10 @@ namespace MpqNameBreaker.Mpq
                     s1 = prefixSeed1b;
                     s2 = prefixSeed2b;
 
-                    for( int i = 0; i < charsetIndexes.Height; ++i )
+                    for( int i = 0; i < charsetIndexes.Extent.Y; ++i )
                     {
                         // Retrieve the current char of the string
-                        Index1 charsetIdx = charsetIndexes[new Index2( index.X, i )];
+                        Index1D charsetIdx = charsetIndexes[new Index2D( index.X, i )];
 
                         if( charsetIdx == -1 ) // break if end of the string is reached
                             break; 
@@ -275,8 +260,8 @@ namespace MpqNameBreaker.Mpq
                     if( s1 == hashBLookup )
                     {
                         // Populate foundNameCharsetIndexes and return
-                        for( int i = 0; i < charsetIndexes.Height; ++i )
-                            foundNameCharsetIndexes[i] = charsetIndexes[new Index2( index.X, i )];
+                        for( int i = 0; i < charsetIndexes.Extent.Y; ++i )
+                            foundNameCharsetIndexes[i] = charsetIndexes[new Index2D( index.X, i )];
 
                         return;
                     }
@@ -285,7 +270,7 @@ namespace MpqNameBreaker.Mpq
 
                 // Move to next name in the batch (brute force increment)
                 // If we are AT the last char of the charset
-                if( charsetIndexes[new Index2( index.X, generatedCharIndex )] == charset.Length-1 )
+                if( charsetIndexes[new Index2D( index.X, generatedCharIndex )] == charset.Length-1 )
                 {
                     bool increaseNameSize = false;
 
@@ -297,7 +282,7 @@ namespace MpqNameBreaker.Mpq
                     for( int i = generatedCharIndex; i >= stopValue; --i )
                     {
                         // Retrieve the current char of the string
-                        Index2 idx = new Index2( index.X, i );
+                        Index2D idx = new Index2D( index.X, i );
 
                         // If we are at the last char of the charset then go back to the first char
                         if( charsetIndexes[idx] == charset.Length-1 )
@@ -323,14 +308,14 @@ namespace MpqNameBreaker.Mpq
                     {
                         // Increase name size by one char
                         generatedCharIndex++;
-                        charsetIndexes[new Index2( index.X, generatedCharIndex )] = 0;
+                        charsetIndexes[new Index2D( index.X, generatedCharIndex )] = 0;
                     }
                 }
                 // If the generated char is within the charset
                 else
                 {
                     // Move to next char
-                    charsetIndexes[new Index2( index.X, generatedCharIndex )]++;
+                    charsetIndexes[new Index2D( index.X, generatedCharIndex )]++;
                 }
 
                 nameCount--;

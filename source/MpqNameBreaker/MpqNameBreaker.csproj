@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ILGPU" Version="0.10.1" />
+    <PackageReference Include="ILGPU" Version="1.0.0" />
     <PackageReference Include="PowerShellStandard.Library" Version="5.1.1">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
