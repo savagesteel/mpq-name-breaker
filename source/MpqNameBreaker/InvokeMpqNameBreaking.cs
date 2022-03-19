@@ -145,21 +145,11 @@ namespace MpqNameBreaker
             var charsetBuffer = _hashCalculatorAccelerated.Accelerator.Allocate1D(_bruteForceBatches.CharsetBytes);
             var charsetIndexesBuffer = _hashCalculatorAccelerated.Accelerator.Allocate2DDenseX<int>(new Index2D(BatchSize, BruteForceBatches.MaxGeneratedChars));
 
-            // Suffix processing
-            int suffixLength;
-            byte[] suffixBytes;
-            if (Suffix.Length > 0)
-            {
-                suffixLength = Suffix.Length;
-                suffixBytes = Encoding.ASCII.GetBytes(Suffix.ToUpper());
-            }
-            else
-            {
-                suffixLength = 1;
-                suffixBytes = new byte[suffixLength];
-                suffixBytes[0] = 0x00;
-            }
+            // Suffix data initialization
+            byte[] suffixBytes = InitializeSuffixData(Suffix);
             var suffixBytesBuffer = _hashCalculatorAccelerated.Accelerator.Allocate1D(suffixBytes);
+
+            // Crypt table initialization
             var cryptTableBuffer = _hashCalculatorAccelerated.Accelerator.Allocate1D(_hashCalculatorAccelerated.CryptTable);
 
             int nameCount = (int)Math.Pow(_bruteForceBatches.Charset.Length, BatchCharCount);
@@ -284,6 +274,23 @@ namespace MpqNameBreaker
             }
 
             return (prefixSeed1A, prefixSeed2A, prefixSeed1B, prefixSeed2B);
+        }
+
+        private byte[] InitializeSuffixData(string suffix)
+        {
+            byte[] suffixBytes;
+
+            if (suffix.Length > 0)
+            {
+                suffixBytes = Encoding.ASCII.GetBytes(Suffix.ToUpper());
+            }
+            else
+            {
+                suffixBytes = new byte[1];
+                suffixBytes[0] = 0x00;
+            }
+
+            return suffixBytes;            
         }
     }
 }
