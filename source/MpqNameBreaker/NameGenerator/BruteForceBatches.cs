@@ -158,7 +158,6 @@ namespace MpqNameBreaker.NameGenerator
                     }
                 }
 
-
                 count++;
             }
 

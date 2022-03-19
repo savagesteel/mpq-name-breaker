@@ -158,7 +158,6 @@ namespace MpqNameBreaker.NameGenerator
             else
             {
                 RefreshNameChar(_generatedCharIndex);
-
             }
 
             // Move to next char

@@ -18,8 +18,6 @@ namespace MpqNameBreaker.Mpq
         public uint[] CryptTable { get; private set; }
 
         // Fields
-
-
         // Constructors
         public HashCalculator()
         {
@@ -43,10 +41,10 @@ namespace MpqNameBreaker.Mpq
                 {
                     uint temp1, temp2;
 
-                    seed = (seed * 125 + 3) % 0x2AAAAB;
+                    seed = ((seed * 125) + 3) % 0x2AAAAB;
                     temp1 = (seed & 0xFFFF) << 0x10;
 
-                    seed = (seed * 125 + 3) % 0x2AAAAB;
+                    seed = ((seed * 125) + 3) % 0x2AAAAB;
                     temp2 = (seed & 0xFFFF);
 
                     CryptTable[index2] = (temp1 | temp2);
@@ -71,7 +69,6 @@ namespace MpqNameBreaker.Mpq
 
             return seed1;
         }
-
 
         public (uint, uint) HashStringOptimizedCalculateSeeds(byte[] str, HashType hashType)
         {

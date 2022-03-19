@@ -64,7 +64,6 @@ namespace MpqNameBreaker
             (prefixSeed1A, prefixSeed2A) = _hashCalculator.HashStringOptimizedCalculateSeeds(_bruteForce.PrefixBytes, HashType.MpqHashNameA);
             (prefixSeed1B, prefixSeed2B) = _hashCalculator.HashStringOptimizedCalculateSeeds(_bruteForce.PrefixBytes, HashType.MpqHashNameB);
 
-
             WriteVerbose(DateTime.Now.ToString("HH:mm:ss.fff"));
 
             long count = 0;
