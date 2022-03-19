@@ -46,7 +46,7 @@ namespace MpqNameBreaker
             Batches = batches;
             HashCalc = hashCalc;
 
-            thread = new Thread(BatchJobThread);
+            thread = new Thread(() => JobThread());
 
             BatchSize = Accelerator.MaxNumThreads;
             BatchCharCount = Accelerator.MaxNumThreads < 1024 ? 3 : 4;
@@ -131,13 +131,11 @@ namespace MpqNameBreaker
             return suffixBytes;
         }
 
-        private static void BatchJobThread(object batchJob)
+        private void JobThread()
         {
-            BatchJob job = batchJob as BatchJob;
-
             // Load kernel (GPU function)
             // This function will calculate HashA for each name of a batch and report matches/collisions
-            var kernel = job.Accelerator.LoadAutoGroupedStreamKernel<
+            var kernel = Accelerator.LoadAutoGroupedStreamKernel<
                     Index1D,
                     ArrayView<byte>,
                     ArrayView<uint>,
@@ -155,27 +153,27 @@ namespace MpqNameBreaker
                     ArrayView<int>
                 >(Mpq.HashCalculatorAccelerated.HashStringsBatchOptimized);
 
-            var charsetBuffer = job.Accelerator.Allocate1D(job.Batches.CharsetBytes);
-            var charsetIndexesBuffer = job.Accelerator.Allocate2DDenseX<int>(new Index2D(job.BatchSize, BruteForceBatches.MaxGeneratedChars));
-            var suffixBytesBuffer = job.Accelerator.Allocate1D(job.GetSuffixBytes());
-            var cryptTableBuffer = job.Accelerator.Allocate1D(job.HashCalc.CryptTable);
-            int nameCount = (int)Math.Pow(job.Batches.Charset.Length, job.BatchCharCount);
+            var charsetBuffer = Accelerator.Allocate1D(Batches.CharsetBytes);
+            var charsetIndexesBuffer = Accelerator.Allocate2DDenseX<int>(new Index2D(BatchSize, BruteForceBatches.MaxGeneratedChars));
+            var suffixBytesBuffer = Accelerator.Allocate1D(GetSuffixBytes());
+            var cryptTableBuffer = Accelerator.Allocate1D(HashCalc.CryptTable);
+            int nameCount = (int)Math.Pow(Batches.Charset.Length, BatchCharCount);
 
             // fill result array with -1
             int[] foundNameCharsetIndexes = new int[BruteForceBatches.MaxGeneratedChars];
             for (int i = 0; i < BruteForceBatches.MaxGeneratedChars; ++i)
                 foundNameCharsetIndexes[i] = -1;
 
-            var foundNameCharsetIndexesBuffer = job.Accelerator.Allocate1D(foundNameCharsetIndexes);
+            var foundNameCharsetIndexesBuffer = Accelerator.Allocate1D(foundNameCharsetIndexes);
 
             // MAIN
-            job.Log($"Accelerator: {job.Accelerator.Name} (threads: {job.Accelerator.MaxNumThreads})");
+            Log($"Accelerator: {Accelerator.Name} (threads: {Accelerator.MaxNumThreads})");
 
             // TODO: make this threadsafe
-            while (job.Batches.NextBatch())
+            while (Batches.NextBatch())
             {
                 // Copy char indexes to buffer (TODO: thread safety)
-                charsetIndexesBuffer.CopyFromCPU(job.Batches.BatchNameSeedCharsetIndexes);
+                charsetIndexesBuffer.CopyFromCPU(Batches.BatchNameSeedCharsetIndexes);
 
                 // Call the kernel
                 kernel((int)charsetIndexesBuffer.Extent.X,
@@ -183,29 +181,29 @@ namespace MpqNameBreaker
                        cryptTableBuffer.View,
                        charsetIndexesBuffer.View,
                        suffixBytesBuffer.View,
-                       job.HashA,
-                       job.HashB,
-                       job.prefixSeed1A,
-                       job.prefixSeed2A,
-                       job.prefixSeed1B,
-                       job.prefixSeed2B,
-                       job.Batches.FirstBatch,  // TODO: Thread safety
+                       HashA,
+                       HashB,
+                       prefixSeed1A,
+                       prefixSeed2A,
+                       prefixSeed1B,
+                       prefixSeed2B,
+                       Batches.FirstBatch,  // TODO: Thread safety
                        nameCount,
-                       job.BatchCharCount,
+                       BatchCharCount,
                        foundNameCharsetIndexesBuffer.View);
 
                 // Wait for the kernel to complete
-                job.Accelerator.Synchronize();
+                Accelerator.Synchronize();
 
                 // If name was found
                 foundNameCharsetIndexes = foundNameCharsetIndexesBuffer.GetAsArray1D();
 
                 if (foundNameCharsetIndexes[0] != -1)
                 {
-                    job.NameFound(foundNameCharsetIndexes);
+                    NameFound(foundNameCharsetIndexes);
                     return;
                 }
-                job.RunBatchStatistics();
+                RunBatchStatistics();
             }
         }
     }
