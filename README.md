@@ -1,4 +1,10 @@
 # MPQ Name Breaker
+
+![GitHub](https://img.shields.io/github/license/savagesteel/mpq-name-breaker?style=flat-square)
+![Azure DevOps builds (branch)](https://img.shields.io/azure-devops/build/savagesteel/de630615-07d3-4ee6-a39a-a0b580dedaca/4/dev?label=build%3Adev&logo=azuredevops&style=flat-square)
+[![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/savagesteel/mpq-name-breaker/dev?label=code%20quality%3Adev&logo=codefactor&style=flat-square)](https://www.codefactor.io/repository/github/savagesteel/mpq-name-breaker/overview/dev)
+
+
 ## Introduction
 
 This tool is a PowerShell module that can be used to brute force Blizzard MPQ archives' name hashes.  
