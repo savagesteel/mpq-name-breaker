@@ -95,22 +95,13 @@ namespace MpqNameBreaker
             _bruteForce = new BruteForce(Prefix, Suffix);
             _bruteForce.Initialize();
 
-            // Initialize classic CPU hash calculator and pre-calculate prefix seeds
+            // Initialize classic CPU hash calculator
             _hashCalculator = new HashCalculator();
-            if (Prefix.Length > 0)
-            {
-                (prefixSeed1A, prefixSeed2A) = _hashCalculator.HashStringOptimizedCalculateSeeds(_bruteForce.PrefixBytes, HashType.MpqHashNameA);
-                (prefixSeed1B, prefixSeed2B) = _hashCalculator.HashStringOptimizedCalculateSeeds(_bruteForce.PrefixBytes, HashType.MpqHashNameB);
-            }
-            else
-            {
-                prefixSeed1A = HashCalculatorAccelerated.HashSeed1;
-                prefixSeed2A = HashCalculatorAccelerated.HashSeed2;
-                prefixSeed1B = HashCalculatorAccelerated.HashSeed1;
-                prefixSeed2B = HashCalculatorAccelerated.HashSeed2;
-            }
 
-            // Initialize GPU hash calculator
+            // Pre-calculate prefix seeds
+            (prefixSeed1A, prefixSeed2A, prefixSeed1B, prefixSeed2B) = PreCalculatePrefixSeeds(Prefix.Length);
+
+            // Initialize accelerated hash calculator
             _hashCalculatorAccelerated = new HashCalculatorAccelerated();
             PrintDeviceInfo(_hashCalculatorAccelerated);
 
@@ -152,7 +143,6 @@ namespace MpqNameBreaker
 
             // Prepare data for the kernel
             var charsetBuffer = _hashCalculatorAccelerated.Accelerator.Allocate1D(_bruteForceBatches.CharsetBytes);
-
             var charsetIndexesBuffer = _hashCalculatorAccelerated.Accelerator.Allocate2DDenseX<int>(new Index2D(BatchSize, BruteForceBatches.MaxGeneratedChars));
 
             // Suffix processing
@@ -170,7 +160,6 @@ namespace MpqNameBreaker
                 suffixBytes[0] = 0x00;
             }
             var suffixBytesBuffer = _hashCalculatorAccelerated.Accelerator.Allocate1D(suffixBytes);
-
             var cryptTableBuffer = _hashCalculatorAccelerated.Accelerator.Allocate1D(_hashCalculatorAccelerated.CryptTable);
 
             int nameCount = (int)Math.Pow(_bruteForceBatches.Charset.Length, BatchCharCount);
@@ -274,6 +263,27 @@ namespace MpqNameBreaker
         // This method will be called once at the end of pipeline execution; if no input is received, this method is not called
         protected override void EndProcessing()
         {
+        }
+
+        private (uint, uint, uint, uint) PreCalculatePrefixSeeds(int prefixLength)
+        {
+            uint prefixSeed1A, prefixSeed2A, prefixSeed1B, prefixSeed2B;
+
+            // Pre-calculate prefix seeds
+            if (prefixLength > 0)
+            {
+                (prefixSeed1A, prefixSeed2A) = _hashCalculator.HashStringOptimizedCalculateSeeds(_bruteForce.PrefixBytes, HashType.MpqHashNameA);
+                (prefixSeed1B, prefixSeed2B) = _hashCalculator.HashStringOptimizedCalculateSeeds(_bruteForce.PrefixBytes, HashType.MpqHashNameB);
+            }
+            else
+            {
+                prefixSeed1A = HashCalculatorAccelerated.HashSeed1;
+                prefixSeed2A = HashCalculatorAccelerated.HashSeed2;
+                prefixSeed1B = HashCalculatorAccelerated.HashSeed1;
+                prefixSeed2B = HashCalculatorAccelerated.HashSeed2;
+            }
+
+            return (prefixSeed1A, prefixSeed2A, prefixSeed1B, prefixSeed2B);
         }
     }
 }
