@@ -64,7 +64,6 @@ namespace MpqNameBreaker
             ValueFromPipelineByPropertyName = true)]
         public int BatchCharCount { get; set; }
 
-
         // Fields
         private BruteForce _bruteForce;
         private BruteForceBatches _bruteForceBatches;
@@ -269,9 +268,7 @@ namespace MpqNameBreaker
 
                     WriteVerbose($"Elapsed time: {elapsed} - Name: {Prefix.ToUpper() + lastName + Suffix.ToUpper()} - Name count: {billionCount:N0} billion");
                 }
-
             }
-
         }
 
         // This method will be called once at the end of pipeline execution; if no input is received, this method is not called

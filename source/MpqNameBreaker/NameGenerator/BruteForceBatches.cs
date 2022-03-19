@@ -12,9 +12,7 @@ namespace MpqNameBreaker.NameGenerator
         public string Charset { get; private set; } = DefaultCharset;
         public byte[] CharsetBytes { get; private set; }
 
-
         // Properties
-
         // The number of name seeds that will be generated
         public int BatchSize { get; private set; }
 
