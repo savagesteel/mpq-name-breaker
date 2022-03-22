@@ -14,23 +14,26 @@ namespace MpqNameBreaker
     public class BatchJob
     {
         // Properties
-        public Context Context { get; private set; }
-        public Accelerator Accelerator { get; private set; }
+        public Context Context { get; }
+        public Accelerator Accelerator { get; }
 
-        public BruteForceBatches Batches { get; private set; }
-        public HashCalculatorAccelerated HashCalc { get; private set; }
+        public BruteForceBatches Batches { get; }
+        public HashCalculatorAccelerated HashCalc { get; }
 
-        public int BatchSize { get; set; }
-        public int BatchCharCount { get; set; }
+        public int BatchSize { get; }
+        public int BatchCharCount { get; }
+
         public string Prefix { get; set; }
         public string Suffix { get; set; }
 
         public uint HashA { get; set; }
         public uint HashB { get; set; }
-        public uint prefixSeed1A { get; set; }
-        public uint prefixSeed2A { get; set; }
-        public uint prefixSeed1B { get; set; }
-        public uint prefixSeed2B { get; set; }
+        public uint PrefixSeed1A { get; set; }
+        public uint PrefixSeed2A { get; set; }
+        public uint PrefixSeed1B { get; set; }
+        public uint PrefixSeed2B { get; set; }
+
+        private volatile bool endThread = false;
 
         // Members
         private Thread thread;
@@ -57,7 +60,7 @@ namespace MpqNameBreaker
             logFn = logger;
         }
 
-        public void SetnameFoundCallback(Action<string> nameFound)
+        public void SetNameFoundCallback(Action<string> nameFound)
         {
             nameFoundFn = nameFound;
         }
@@ -88,7 +91,7 @@ namespace MpqNameBreaker
             nameFoundFn(Prefix.ToUpper() + foundName + Suffix.ToUpper());
         }
 
-        private void RunBatchStatistics()
+        private void RunBatchStatistics(BruteForceBatches.Batch batch)
         {
             double oneBatchBillionCount = (Math.Pow(Batches.Charset.Length, BatchCharCount) * BatchSize) / 1_000_000_000;
 
@@ -99,7 +102,7 @@ namespace MpqNameBreaker
             string lastName = "";
             for (int i = 0; i < BruteForceBatches.MaxGeneratedChars; i++)
             {
-                int idx = Batches.BatchNameSeedCharsetIndexes[BatchSize - 1, i];
+                int idx = batch.BatchNameSeedCharsetIndexes[BatchSize - 1, i];
 
                 if (idx == -1)
                     break;
@@ -113,10 +116,15 @@ namespace MpqNameBreaker
         public void Run()
         {
             startTime = DateTime.Now;
-            thread.Start(this);
+            thread.Start();
         }
 
-        public byte[] GetSuffixBytes()
+        public void Stop()
+        {
+            endThread = true;
+        }
+
+        private byte[] GetSuffixBytes()
         {
             byte[] suffixBytes;
             if (Suffix.Length > 0)
@@ -169,11 +177,10 @@ namespace MpqNameBreaker
             // MAIN
             Log($"Accelerator: {Accelerator.Name} (threads: {Accelerator.MaxNumThreads})");
 
-            // TODO: make this threadsafe
-            while (Batches.NextBatch())
+            BruteForceBatches.Batch batch;
+            while ((batch = Batches.NextBatch()) != null && !endThread)
             {
-                // Copy char indexes to buffer (TODO: thread safety)
-                charsetIndexesBuffer.CopyFromCPU(Batches.BatchNameSeedCharsetIndexes);
+                charsetIndexesBuffer.CopyFromCPU(batch.BatchNameSeedCharsetIndexes);
 
                 // Call the kernel
                 kernel((int)charsetIndexesBuffer.Extent.X,
@@ -183,17 +190,19 @@ namespace MpqNameBreaker
                        suffixBytesBuffer.View,
                        HashA,
                        HashB,
-                       prefixSeed1A,
-                       prefixSeed2A,
-                       prefixSeed1B,
-                       prefixSeed2B,
-                       Batches.FirstBatch,  // TODO: Thread safety
+                       PrefixSeed1A,
+                       PrefixSeed2A,
+                       PrefixSeed1B,
+                       PrefixSeed2B,
+                       batch.FirstBatch,
                        nameCount,
                        BatchCharCount,
                        foundNameCharsetIndexesBuffer.View);
 
                 // Wait for the kernel to complete
                 Accelerator.Synchronize();
+
+                if (endThread) return;
 
                 // If name was found
                 foundNameCharsetIndexes = foundNameCharsetIndexesBuffer.GetAsArray1D();
@@ -203,7 +212,7 @@ namespace MpqNameBreaker
                     NameFound(foundNameCharsetIndexes);
                     return;
                 }
-                RunBatchStatistics();
+                RunBatchStatistics(batch);
             }
         }
     }
