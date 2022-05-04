@@ -1,5 +1,5 @@
-using System;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace MpqNameBreaker.NameGenerator
 {
@@ -9,55 +9,50 @@ namespace MpqNameBreaker.NameGenerator
         public const int MaxGeneratedChars = 16;
         public const string DefaultCharset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_-";
 
-        public string Charset { get; private set; } = DefaultCharset;
-        public byte[] CharsetBytes { get; private set; }
+        public string Charset { get; } = DefaultCharset;
+        public byte[] CharsetBytes { get; }
+
 
         // Properties
         // The number of name seeds that will be generated
-        public int BatchSize { get; private set; }
+        public int BatchSize { get; }
 
         // Number of chars in one batch item.
         // e.g. if this number is 5 each batch item will contain Charset.Length ^ 5 names
-        public int BatchItemCharCount { get; private set; }
-
-        // The batch seeds are stored in a 2D array.
-        // Each line contains the bytes of one seed name string.
-        public int[,] BatchNameSeedCharsetIndexes { get; private set; }
-        public string[] BatchNames
-        {
-            get
-            {
-                string[] res = new string[BatchSize];
-                byte[] str;
-
-                for (int i = 0; i < BatchSize; ++i)
-                {
-                    str = new byte[MaxGeneratedChars];
-
-                    res[i] = "";
-                    for (int j = 0; j < MaxGeneratedChars; ++j)
-                    {
-                        int idx = BatchNameSeedCharsetIndexes[i, j];
-                        //int nextIdx = BatchNameSeedCharsetIndexes[i+1,j];
-
-                        if (idx == -1)
-                            break;
-
-                        res[i] += Convert.ToChar(CharsetBytes[idx]);
-                    }
-                }
-                return res;
-            }
-        }
+        public int BatchItemCharCount { get; }
 
         public bool Initialized { get; private set; } = false;
 
-        public bool FirstBatch { get; private set; } = true;
-        public int BatchNumber { get; private set; } = 0;
-
         // Fields
+
+        // The batch seeds are stored in a 2D array.
+        // Each line contains the bytes of one seed name string.
+        private readonly int[,] batchNameSeedCharsetIndexes;
+
+        private bool firstBatch = true;
+        private int batchNumber = 0;
+
         private int _generatedCharIndex = 0;
         private int[] _nameCharsetIndexes;
+
+        private readonly object asyncBatchLock = new object();
+        private readonly object batchLock = new object();
+        private Task<Batch> nextBatchTask = null;
+
+        public class Batch
+        {
+            public bool FirstBatch { get; } = true;
+            public int BatchNumber { get; } = 0;
+            public int[,] BatchNameSeedCharsetIndexes { get; }
+
+            public Batch(bool firstBatch, int batchNum, int[,] charsetIndexes)
+            {
+                this.FirstBatch = firstBatch;
+                this.BatchNumber = batchNum;
+                this.BatchNameSeedCharsetIndexes = charsetIndexes.Clone() as int[,];
+            }
+        }
+
 
         // Constructors
         public BruteForceBatches()
@@ -69,7 +64,7 @@ namespace MpqNameBreaker.NameGenerator
         {
             this.BatchSize = size;
             this.BatchItemCharCount = charCount;
-            this.BatchNameSeedCharsetIndexes = new int[size, MaxGeneratedChars];
+            this.batchNameSeedCharsetIndexes = new int[size, MaxGeneratedChars];
 
             this.Charset = charset + additionalChars;
             this.CharsetBytes = Encoding.ASCII.GetBytes(Charset.ToUpper());
@@ -84,12 +79,13 @@ namespace MpqNameBreaker.NameGenerator
                 _nameCharsetIndexes[i] = -1;
 
             Initialized = true;
+            nextBatchTask = Task.Run(NextBatchAsync);
         }
 
         public bool NextBatchNameSeed()
         {
             if (!Initialized)
-                throw new System.ArgumentException();
+                throw new System.InvalidOperationException("Batch not initialized");
 
             if (_generatedCharIndex == MaxGeneratedChars)
                 return false;
@@ -135,34 +131,52 @@ namespace MpqNameBreaker.NameGenerator
             return true;
         }
 
-        public bool NextBatch()
+        private Batch NextBatchAsync()
         {
-            if (FirstBatch & BatchNumber > 0)
-                FirstBatch = false;
-
-            int count = 0;
-            while (NextBatchNameSeed() && count < BatchSize)
+            lock (asyncBatchLock)
             {
-                // Copy name charset indexes in the batch 2D array
-                for (int i = 0; i < MaxGeneratedChars; ++i)
-                {
-                    BatchNameSeedCharsetIndexes[count, i] = _nameCharsetIndexes[i];
-                }
+                // TODO: mutex here
+                if (firstBatch & batchNumber > 0)
+                    firstBatch = false;
 
-                if (FirstBatch == false || count > 0)
+                int count = 0;
+                while (NextBatchNameSeed() && count < BatchSize)
                 {
-                    // Copy additional seed bytes to the 2D array
-                    for (int j = _generatedCharIndex + 1; j < _generatedCharIndex + 1 + BatchItemCharCount; j++)
+                    // Copy name charset indexes in the batch 2D array
+                    for (int i = 0; i < MaxGeneratedChars; ++i)
                     {
-                        BatchNameSeedCharsetIndexes[count, j] = 0;
+                        batchNameSeedCharsetIndexes[count, i] = _nameCharsetIndexes[i];
                     }
+
+                    if (firstBatch == false || count > 0)
+                    {
+                        // Copy additional seed bytes to the 2D array
+                        for (int j = _generatedCharIndex + 1; j < _generatedCharIndex + 1 + BatchItemCharCount; j++)
+                        {
+                            batchNameSeedCharsetIndexes[count, j] = 0;
+                        }
+                    }
+
+
+                    count++;
                 }
 
-                count++;
+                batchNumber++;
+                return new Batch(firstBatch, batchNumber, batchNameSeedCharsetIndexes);
             }
+        }
 
-            BatchNumber++;
-            return true;
+        public Batch NextBatch()
+        {
+            lock (batchLock)
+            {
+                if (!Initialized)
+                    throw new System.InvalidOperationException("Batch not initialized");
+
+                Batch result = nextBatchTask.Result;
+                nextBatchTask = Task.Run(NextBatchAsync);
+                return result;
+            }
         }
     }
 }

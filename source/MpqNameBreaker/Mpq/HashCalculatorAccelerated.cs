@@ -17,14 +17,13 @@ namespace MpqNameBreaker.Mpq
         // Properties
         public uint[] CryptTable { get; private set; }
 
-        public Accelerator Accelerator { get; private set; }
         public Context GPUContext { get; private set; }
 
         // Constructors
         public HashCalculatorAccelerated()
         {
             InitializeCryptTable();
-            InitializeGpuAccelarator();
+            InitializeGpuContext();
         }
 
         // Methods
@@ -55,7 +54,7 @@ namespace MpqNameBreaker.Mpq
             }
         }
 
-        public void InitializeGpuAccelarator()
+        public void InitializeGpuContext()
         {
             GPUContext = Context.Create(builder =>
             {
@@ -65,9 +64,11 @@ namespace MpqNameBreaker.Mpq
                 .OpenCL()
                 .Cuda();
             });
+        }
 
-            Device bestDevice = GPUContext.Devices.OrderByDescending(device => device.MaxNumThreads).First();
-            Accelerator = bestDevice.CreateAccelerator(GPUContext);
+        public Device GetBestDevice()
+        {
+            return GPUContext.Devices.OrderByDescending(device => device.MaxNumThreads).First();
         }
 
         public static void HashStringsBatchOptimized(
@@ -160,7 +161,7 @@ namespace MpqNameBreaker.Mpq
 
                     ch = charset[charsetIdx];
 
-                    // Hash calculation                    
+                    // Hash calculation
                     s1 = cryptTable[typeA + ch] ^ (s1 + s2);
                     s2 = ch + s1 + s2 + (s2 << 5) + 3;
 
