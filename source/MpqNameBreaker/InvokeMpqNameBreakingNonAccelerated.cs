@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Text;
-using System.Collections;
-using System.Diagnostics;
 using System.Management.Automation;
-using System.Management.Automation.Runspaces;
 using MpqNameBreaker.NameGenerator;
 using MpqNameBreaker.Mpq;
 

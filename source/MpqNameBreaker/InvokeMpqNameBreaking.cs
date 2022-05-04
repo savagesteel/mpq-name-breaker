@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Text;
 using System.Management.Automation;
 using MpqNameBreaker.NameGenerator;
 using MpqNameBreaker.Mpq;
-using ILGPU;
-using ILGPU.Runtime;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
-using System.ComponentModel;
 
 namespace MpqNameBreaker
 {
@@ -72,7 +67,6 @@ namespace MpqNameBreaker
         // Fields
         private BruteForce _bruteForce;
         private BruteForceBatches _bruteForceBatches;
-        //private BruteForceBatches3D _bruteForceBatches3D;
         private HashCalculator _hashCalculator;
         private HashCalculatorAccelerated _hashCalculatorAccelerated;
         private volatile bool nameFound = false;
@@ -163,7 +157,9 @@ namespace MpqNameBreaker
 
             foreach (var device in _hashCalculatorAccelerated.GPUContext)
             {
+                // TODO: Temporary - only use the best device until we can utilize multiple devices with different batch sizes...
                 if (device != _hashCalculatorAccelerated.GetBestDevice()) continue;
+
                 var job = new BatchJob(_hashCalculatorAccelerated.GPUContext, device, _bruteForceBatches, _hashCalculatorAccelerated) {
                     Prefix = Prefix,
                     Suffix = Suffix,
