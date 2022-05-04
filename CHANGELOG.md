@@ -5,12 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## 0.3.0 - 2022-05-04
+### Changed
+- Processing is done on a per-device basis in a new BatchJob object, in a separate thread per device.
+- BruteForceBatches will prepare for the next batch in parallel.
+
+
 ## 0.2.2 - 2022-03-18
 ### Changed
 - ILGPU updated to 1.0.0
 
 ### Removed
 - AcceleratorId parameter.
+
 
 ## 0.2.1 - 2022-03-16
 ### Added
@@ -19,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - ILGPU updated to 0.10.1
 - PowerShellStandard.Library updated to 5.1.1
+
 
 ## 0.2.0 - 2020-12-15
 ### Added
