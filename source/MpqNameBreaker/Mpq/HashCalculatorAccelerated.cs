@@ -43,10 +43,10 @@ namespace MpqNameBreaker.Mpq
                 {
                     uint temp1, temp2;
 
-                    seed = (seed * 125 + 3) % 0x2AAAAB;
+                    seed = ((seed * 125) + 3) % 0x2AAAAB;
                     temp1 = (seed & 0xFFFF) << 0x10;
 
-                    seed = (seed * 125 + 3) % 0x2AAAAB;
+                    seed = ((seed * 125) + 3) % 0x2AAAAB;
                     temp2 = (seed & 0xFFFF);
 
                     CryptTable[index2] = (temp1 | temp2);
@@ -233,7 +233,6 @@ namespace MpqNameBreaker.Mpq
 
                         return;
                     }
-
                 }
 
                 // Move to next name in the batch (brute force increment)
